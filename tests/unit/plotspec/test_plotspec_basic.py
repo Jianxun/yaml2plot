@@ -31,7 +31,7 @@ class TestPlotSpecFromYaml:
 
     def test_invalid_yaml_raises_valueerror(self):
         bad_yaml = "title: [unbalanced braces"
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Invalid YAML syntax"):
             PlotSpec.from_yaml(bad_yaml)
 
     def test_multifigure_yaml_not_supported(self):
@@ -49,6 +49,82 @@ class TestPlotSpecFromYaml:
         """
         with pytest.raises(ValueError):
             PlotSpec.from_yaml(multi_yaml)
+
+    def test_unknown_top_level_key_is_rejected(self):
+        yaml_str = """
+        x: {signal: time}
+        y:
+          - label: Voltage
+            signals: {Out: v(out)}
+        unexpected: true
+        """
+        with pytest.raises(ValueError, match="unexpected"):
+            PlotSpec.from_yaml(yaml_str)
+
+    def test_unknown_nested_key_is_rejected(self):
+        yaml_str = """
+        x:
+          signal: time
+          bogus: value
+        y:
+          - label: Voltage
+            signals: {Out: v(out)}
+        """
+        with pytest.raises(ValueError, match="bogus"):
+            PlotSpec.from_yaml(yaml_str)
+
+    def test_invalid_scale_is_rejected(self):
+        yaml_str = """
+        x:
+          signal: time
+          scale: logarithmic
+        y:
+          - label: Voltage
+            signals: {Out: v(out)}
+        """
+        with pytest.raises(ValueError, match="scale"):
+            PlotSpec.from_yaml(yaml_str)
+
+    def test_invalid_range_is_rejected(self):
+        yaml_str = """
+        x:
+          signal: time
+          range: [10, 1]
+        y:
+          - label: Voltage
+            signals: {Out: v(out)}
+        """
+        with pytest.raises(ValueError, match="range"):
+            PlotSpec.from_yaml(yaml_str)
+
+    def test_empty_y_list_is_rejected(self):
+        yaml_str = """
+        x: {signal: time}
+        y: []
+        """
+        with pytest.raises(ValueError, match="y"):
+            PlotSpec.from_yaml(yaml_str)
+
+    def test_empty_signals_map_is_rejected(self):
+        yaml_str = """
+        x: {signal: time}
+        y:
+          - label: Voltage
+            signals: {}
+        """
+        with pytest.raises(ValueError, match="signals"):
+            PlotSpec.from_yaml(yaml_str)
+
+    def test_validation_error_includes_field_path(self):
+        yaml_str = """
+        x: {signal: time}
+        y:
+          - label: Voltage
+            signals: {Out: v(out)}
+            scale: bad
+        """
+        with pytest.raises(ValueError, match="y.0.scale"):
+            PlotSpec.from_yaml(yaml_str)
 
 
 class TestPlotSpecRoundTrip:
@@ -92,3 +168,10 @@ class TestPlotSpecFromFile:
         )
         spec = PlotSpec.from_file(cfg_path)
         assert spec.x.signal == "time"
+
+    def test_from_file_includes_path_in_validation_error(self, tmp_path):
+        cfg_path = tmp_path / "spec.yml"
+        cfg_path.write_text("x: {signal: time}\ny:\n  - label: V\n    signals: {}\n")
+
+        with pytest.raises(ValueError, match=str(cfg_path)):
+            PlotSpec.from_file(cfg_path)
