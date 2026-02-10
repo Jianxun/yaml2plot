@@ -10,6 +10,7 @@ from yaml2plot.core.plotting import (
     _config_zoom,
     add_waveform,
     create_figure,
+    normalize_plot_data,
     plot,
 )
 from yaml2plot.core.plotspec import PlotSpec
@@ -92,44 +93,59 @@ class TestAddWaveform:
 
 class TestPlotFilePathHandling:
     """Test plot() function with file path input using xarray Dataset API."""
-    
+
     def test_plot_with_file_path_converts_xarray_dataset(self, tmp_path):
         """Test that plot() correctly handles file paths with new xarray Dataset API."""
         # Create a mock file
         test_file = tmp_path / "test.raw"
         test_file.write_text("dummy")
-        
+
         # Create a mock xarray Dataset
         mock_dataset = xr.Dataset(
             data_vars={
                 "v(out)": (["time"], np.array([0.0, 0.9, 1.8])),
-                "v(in)": (["time"], np.array([1.8, 1.8, 1.8]))
+                "v(in)": (["time"], np.array([1.8, 1.8, 1.8])),
             },
             coords={"time": np.array([0.0, 1e-9, 2e-9])},
-            attrs={"analysis_type": "transient"}
+            attrs={"analysis_type": "transient"},
         )
-        
+
         # Create a simple plot spec
-        spec = PlotSpec.from_yaml("""
+        spec = PlotSpec.from_yaml(
+            """
         title: "Test Plot"
         x: {signal: "time"}
         y:
           - label: "Voltage (V)"
             signals: {Output: "v(out)"}
-        """)
-        
+        """
+        )
+
         # Mock load_spice_raw to return xarray Dataset
         with patch("yaml2plot.loader.load_spice_raw", return_value=mock_dataset):
             fig = plot(test_file, spec, show=False)
-            
+
         # Verify the plot was created correctly
         assert isinstance(fig, go.Figure)
         assert len(fig.data) == 1
         assert fig.data[0].name == "Output"
-        
+
         # Verify the data matches our mock dataset
         np.testing.assert_array_equal(fig.data[0].x, [0.0, 1e-9, 2e-9])
         np.testing.assert_array_equal(fig.data[0].y, [0.0, 0.9, 1.8])
+
+
+class TestNormalizePlotData:
+    def test_normalize_plot_data_accepts_xarray_dataset(self):
+        dataset = xr.Dataset(
+            data_vars={"v(out)": (["time"], np.array([0.0, 0.9, 1.8]))},
+            coords={"time": np.array([0.0, 1e-9, 2e-9])},
+        )
+
+        normalized = normalize_plot_data(dataset)
+
+        np.testing.assert_array_equal(normalized["time"], [0.0, 1e-9, 2e-9])
+        np.testing.assert_array_equal(normalized["v(out)"], [0.0, 0.9, 1.8])
 
 
 class TestPlotDataFrameHandling:
@@ -138,13 +154,15 @@ class TestPlotDataFrameHandling:
         df = pd.DataFrame({"vout": [0.0, 0.9], "vin": [1.8, 1.8]}, index=[0.0, 1e-9])
         df.index.name = "time"
 
-        spec = PlotSpec.from_yaml("""
+        spec = PlotSpec.from_yaml(
+            """
         title: "DataFrame Input"
         x: {signal: "time"}
         y:
           - label: "Voltage (V)"
             signals: {Output: "vout"}
-        """)
+        """
+        )
 
         fig = plot(df, spec, show=False)
 
@@ -157,12 +175,14 @@ class TestPlotDataFrameHandling:
         pd = pytest.importorskip("pandas")
         df = pd.DataFrame({"vout": [0.0, 0.9]}, index=[0, 1])
 
-        spec = PlotSpec.from_yaml("""
+        spec = PlotSpec.from_yaml(
+            """
         x: {signal: "index"}
         y:
           - label: "Voltage (V)"
             signals: {Output: "vout"}
-        """)
+        """
+        )
 
         fig = plot(df, spec, show=False)
         np.testing.assert_array_equal(fig.data[0].x, [0, 1])
@@ -175,12 +195,14 @@ class TestPlotCsvPathRouting:
         csv_file.write_text("time,vout\n0,0.0\n1e-9,0.9\n")
         df = pd.read_csv(csv_file)
 
-        spec = PlotSpec.from_yaml("""
+        spec = PlotSpec.from_yaml(
+            """
         x: {signal: "time"}
         y:
           - label: "Voltage (V)"
             signals: {Output: "vout"}
-        """)
+        """
+        )
 
         with patch("yaml2plot.loader.load_csv_data", return_value=df) as m_csv, patch(
             "yaml2plot.loader.load_spice_raw"

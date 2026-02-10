@@ -32,9 +32,12 @@ class TestCliRawFieldHandling:
         assert config["raw"] == "test.raw"
 
     @patch("yaml2plot.cli.load_spice_raw")
+    @patch("yaml2plot.cli.normalize_plot_data")
     @patch("yaml2plot.cli.create_plot")
     @patch("yaml2plot.cli.configure_plotly_renderer")
-    def test_yaml_raw_field_usage(self, mock_configure, mock_plot, mock_load, tmp_path):
+    def test_yaml_raw_field_usage(
+        self, mock_configure, mock_plot, mock_normalize, mock_load, tmp_path
+    ):
         """Test using raw: field from YAML specification."""
         # Create a test spec file with raw: field
         spec_file = tmp_path / "spec.yaml"
@@ -58,6 +61,10 @@ y:
         coords = {"time": np.array([1, 2, 3])}
         mock_dataset = xr.Dataset(data_vars=data_vars, coords=coords)
         mock_load.return_value = mock_dataset
+        mock_normalize.return_value = {
+            "time": np.array([1, 2, 3]),
+            "v1": np.array([1, 2, 3]),
+        }
         mock_plot.return_value = MagicMock()
 
         runner = CliRunner()
@@ -66,6 +73,7 @@ y:
         assert result.exit_code == 0
         assert f"Loading SPICE data from: {raw_file}" in result.output
         mock_load.assert_called_once_with(raw_file)
+        mock_normalize.assert_called_once_with(mock_dataset)
 
     @patch("yaml2plot.cli.load_spice_raw")
     @patch("yaml2plot.cli.create_plot")
