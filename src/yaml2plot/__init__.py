@@ -15,7 +15,12 @@ from .core.wavedataset import WaveDataset
 
 # Main API functions
 from .core.plotting import plot
-from .loader import load_spice_raw, load_spice_raw_batch
+from .loader import (
+    load_csv_data,
+    load_csv_data_batch,
+    load_spice_raw,
+    load_spice_raw_batch,
+)
 
 # Renderer helpers
 from .utils.env import configure_plotly_renderer
@@ -51,6 +56,8 @@ __all__ = [
     "plot",
     "load_spice_raw",
     "load_spice_raw_batch",
+    "load_csv_data",
+    "load_csv_data_batch",
     # Core classes
     "PlotSpec",
     "WaveDataset",

@@ -130,3 +130,63 @@ class TestPlotFilePathHandling:
         # Verify the data matches our mock dataset
         np.testing.assert_array_equal(fig.data[0].x, [0.0, 1e-9, 2e-9])
         np.testing.assert_array_equal(fig.data[0].y, [0.0, 0.9, 1.8])
+
+
+class TestPlotDataFrameHandling:
+    def test_plot_accepts_pandas_dataframe_with_named_index(self):
+        pd = pytest.importorskip("pandas")
+        df = pd.DataFrame({"vout": [0.0, 0.9], "vin": [1.8, 1.8]}, index=[0.0, 1e-9])
+        df.index.name = "time"
+
+        spec = PlotSpec.from_yaml("""
+        title: "DataFrame Input"
+        x: {signal: "time"}
+        y:
+          - label: "Voltage (V)"
+            signals: {Output: "vout"}
+        """)
+
+        fig = plot(df, spec, show=False)
+
+        assert isinstance(fig, go.Figure)
+        assert len(fig.data) == 1
+        np.testing.assert_array_equal(fig.data[0].x, [0.0, 1e-9])
+        np.testing.assert_array_equal(fig.data[0].y, [0.0, 0.9])
+
+    def test_plot_accepts_dataframe_with_index_alias(self):
+        pd = pytest.importorskip("pandas")
+        df = pd.DataFrame({"vout": [0.0, 0.9]}, index=[0, 1])
+
+        spec = PlotSpec.from_yaml("""
+        x: {signal: "index"}
+        y:
+          - label: "Voltage (V)"
+            signals: {Output: "vout"}
+        """)
+
+        fig = plot(df, spec, show=False)
+        np.testing.assert_array_equal(fig.data[0].x, [0, 1])
+
+
+class TestPlotCsvPathRouting:
+    def test_csv_path_uses_csv_loader(self, tmp_path):
+        pd = pytest.importorskip("pandas")
+        csv_file = tmp_path / "data.csv"
+        csv_file.write_text("time,vout\n0,0.0\n1e-9,0.9\n")
+        df = pd.read_csv(csv_file)
+
+        spec = PlotSpec.from_yaml("""
+        x: {signal: "time"}
+        y:
+          - label: "Voltage (V)"
+            signals: {Output: "vout"}
+        """)
+
+        with patch("yaml2plot.loader.load_csv_data", return_value=df) as m_csv, patch(
+            "yaml2plot.loader.load_spice_raw"
+        ) as m_raw:
+            fig = plot(csv_file, spec, show=False)
+
+        assert isinstance(fig, go.Figure)
+        m_csv.assert_called_once_with(csv_file)
+        m_raw.assert_not_called()

@@ -154,3 +154,54 @@ class TestLoadSpiceRawXarray:
         # Check global attributes (metadata)
         assert ds.attrs["analysis_type"] == "transient"
         assert ds.attrs["corner"] == "tt"
+
+
+class TestLoadCsvData:
+    def test_load_csv_data_returns_dataframe(self, tmp_path):
+        pd = pytest.importorskip("pandas")
+        csv_file = tmp_path / "wave.csv"
+        csv_file.write_text("time,vout,vin\n0,0.0,1.8\n1e-9,0.9,1.8\n")
+
+        df = wv_loader.load_csv_data(csv_file)
+
+        assert isinstance(df, pd.DataFrame)
+        assert list(df.columns) == ["time", "vout", "vin"]
+        np.testing.assert_allclose(df["vout"].to_numpy(), [0.0, 0.9])
+
+    def test_load_csv_data_supports_x_column_index(self, tmp_path):
+        csv_file = tmp_path / "wave.csv"
+        csv_file.write_text("time,vout\n0,0.0\n1e-9,0.9\n")
+
+        df = wv_loader.load_csv_data(csv_file, x_column="time")
+
+        assert list(df.columns) == ["time", "vout"]
+        assert df.index.name == "time"
+        np.testing.assert_allclose(df.index.to_numpy(dtype=float), [0.0, 1e-9])
+
+    def test_load_csv_data_missing_x_column_raises(self, tmp_path):
+        csv_file = tmp_path / "wave.csv"
+        csv_file.write_text("time,vout\n0,0.0\n1e-9,0.9\n")
+
+        with pytest.raises(ValueError, match="x_column"):
+            wv_loader.load_csv_data(csv_file, x_column="missing")
+
+
+class TestLoadCsvDataBatch:
+    def test_batch_calls_underlying_loader(self, tmp_path):
+        p1 = tmp_path / "a.csv"
+        p2 = tmp_path / "b.csv"
+        for p in (p1, p2):
+            p.write_text("time,v\n0,0\n")
+
+        with patch.object(wv_loader, "load_csv_data", return_value=MagicMock()) as m_load:
+            results = wv_loader.load_csv_data_batch([p1, p2])
+
+        assert len(results) == 2
+        assert m_load.call_count == 2
+        m_load.assert_any_call(p1)
+        m_load.assert_any_call(p2)
+
+    @pytest.mark.parametrize("bad_input", [None, "not-a-list", 123])
+    def test_bad_collections_raise(self, bad_input):
+        with pytest.raises(TypeError):
+            wv_loader.load_csv_data_batch(bad_input)
