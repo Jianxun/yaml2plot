@@ -9,6 +9,20 @@ yaml2plot 2.0.1 exposes a streamlined, function-oriented public API built around
 
 This page documents each public symbol in the order you will use them.
 
+Coordinate Inference (`load_spice_raw`)
+----------------------------------------
+
+When building an ``xarray.Dataset`` from a SPICE ``.raw`` file, coordinate selection is deterministic:
+
+1. Use ``time`` if present.
+2. Otherwise use ``frequency`` if present.
+3. Otherwise use the first signal as a fallback coordinate (dimension name ``axis``).
+
+Warnings:
+
+* If both ``time`` and ``frequency`` are present, ``time`` is chosen and a ``UserWarning`` is emitted.
+* If neither canonical coordinate exists, the first-signal fallback is used and a ``UserWarning`` is emitted.
+
 Main API Symbols
 ----------------
 

@@ -24,9 +24,9 @@ T-008:
   pr: 28
   merged: true
 T-009:
-  status: ready
-  pr: null
-  merged: false
+  status: done
+  pr: 29
+  merged: true
 T-010:
   status: ready
   pr: null
