@@ -19,5 +19,8 @@ Main API Symbols
 
    plot
    load_spice_raw
+   load_spice_raw_batch
+   load_csv_data
+   load_csv_data_batch
    PlotSpec
-   WaveDataset 
+   WaveDataset

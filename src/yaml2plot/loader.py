@@ -8,22 +8,31 @@ from a batch of files (e.g. PVT / Monte-Carlo sweeps).
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 import xarray as xr
 
 from .core.wavedataset import WaveDataset
 
+try:
+    import pandas as pd
+
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
+
 __all__ = [
     "load_spice_raw",
     "load_spice_raw_batch",
+    "load_csv_data",
+    "load_csv_data_batch",
 ]
 
 _PathLike = Union[str, Path]
 
 
-def _validate_file_path(path: _PathLike) -> Path:
+def _validate_file_path(path: _PathLike, *, kind: str = "file") -> Path:
     """Return a *Path* after validating type, emptiness, and existence."""
     if path is None:
         raise TypeError("file path must be a string or Path object, not None")
@@ -36,7 +45,7 @@ def _validate_file_path(path: _PathLike) -> Path:
 
     file_path = Path(path).expanduser()
     if not file_path.exists():
-        raise FileNotFoundError(f"SPICE raw file not found: {file_path}")
+        raise FileNotFoundError(f"{kind} not found: {file_path}")
 
     return file_path
 
@@ -48,7 +57,7 @@ def _validate_file_path(path: _PathLike) -> Path:
 
 def load_spice_raw(raw_file: _PathLike) -> xr.Dataset:
     """Load one SPICE *.raw* file and return an xarray Dataset."""
-    file_path = _validate_file_path(raw_file)
+    file_path = _validate_file_path(raw_file, kind="SPICE raw file")
 
     wave_data = WaveDataset.from_raw(str(file_path))
     
@@ -101,3 +110,40 @@ def load_spice_raw_batch(
         raise TypeError("raw_files must be a list or tuple of file paths")
 
     return [load_spice_raw(p) for p in raw_files]
+
+
+def load_csv_data(
+    csv_file: _PathLike,
+    *,
+    x_column: Optional[str] = None,
+) -> "pd.DataFrame":
+    """Load one CSV file and return a pandas DataFrame."""
+    if not HAS_PANDAS:
+        raise ImportError(
+            "pandas is required for CSV loading. Install pandas to use load_csv_data."
+        )
+
+    file_path = _validate_file_path(csv_file, kind="CSV file")
+    dataframe = pd.read_csv(file_path)
+
+    if x_column is not None:
+        if x_column not in dataframe.columns:
+            raise ValueError(
+                f"x_column '{x_column}' not found in CSV columns: {list(dataframe.columns)}"
+            )
+        dataframe = dataframe.set_index(x_column, drop=False)
+
+    return dataframe
+
+
+def load_csv_data_batch(
+    csv_files: List[_PathLike],
+) -> List["pd.DataFrame"]:
+    """Load many CSV files and return a list of pandas DataFrames."""
+    if csv_files is None:
+        raise TypeError("csv_files must be a list of file paths, not None")
+
+    if not isinstance(csv_files, (list, tuple)):
+        raise TypeError("csv_files must be a list or tuple of file paths")
+
+    return [load_csv_data(p) for p in csv_files]
