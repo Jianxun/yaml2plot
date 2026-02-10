@@ -65,11 +65,3 @@ __all__ = [
     "set_renderer",
     "pio",  # Give users access to plotly.io
 ]
-
-# Configure Plotly renderer automatically on import
-# This eliminates the need for manual renderer configuration in user code
-try:
-    configure_plotly_renderer()
-except Exception:
-    # If auto-detection fails, default to browser (safe fallback)
-    pio.renderers.default = "browser"

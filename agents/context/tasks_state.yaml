@@ -28,8 +28,8 @@ T-009:
   pr: 29
   merged: true
 T-010:
-  status: ready
-  pr: null
+  status: request_changes
+  pr: 30
   merged: false
 T-011:
   status: ready

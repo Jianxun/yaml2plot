@@ -106,85 +106,94 @@ def plot(
         y2p plot spec.yaml --title "My Analysis"     # Override title
     """
     plot.formatter_class = CustomFormatter
+    # Load the specification file
+    click.echo(f"Loading plot specification from: {spec_file}")
     try:
-        # Load the specification file
-        click.echo(f"Loading plot specification from: {spec_file}")
         spec = PlotSpec.from_file(spec_file)
+    except FileNotFoundError as exc:
+        raise click.ClickException(str(exc)) from exc
+    except ValueError as exc:
+        raise click.ClickException(f"Invalid plot specification: {exc}") from exc
 
-        # Determine which raw file to use (precedence: --raw > positional > yaml raw: field)
-        final_raw_file = None
-        warning_msg = None
+    # Determine which raw file to use (precedence: --raw > positional > yaml raw: field)
+    final_raw_file = None
+    warning_msg = None
 
-        if raw_override:
-            # --raw option takes highest precedence
-            final_raw_file = raw_override
-            if raw_file or spec.raw:
-                warning_msg = f"CLI --raw option overrides "
-                if raw_file:
-                    warning_msg += f"positional argument '{raw_file}'"
-                if raw_file and spec.raw:
-                    warning_msg += f" and YAML raw: field '{spec.raw}'"
-                elif spec.raw:
-                    warning_msg += f"YAML raw: field '{spec.raw}'"
-        elif raw_file:
-            # Positional argument takes second precedence
-            final_raw_file = raw_file
-            if spec.raw:
-                warning_msg = f"CLI positional argument '{raw_file}' overrides YAML raw: field '{spec.raw}'"
-        elif spec.raw:
-            # YAML raw: field takes lowest precedence
-            final_raw_file = Path(spec.raw)
-        else:
-            # No raw file specified anywhere
-            raise click.ClickException(
-                "No raw file specified. Use one of:\n"
-                "  1. --raw option: y2p plot spec.yaml --raw sim.raw\n"
-                "  2. Positional argument: y2p plot spec.yaml sim.raw\n"
-                "  3. Add 'raw: sim.raw' to your YAML specification file"
-            )
+    if raw_override:
+        # --raw option takes highest precedence
+        final_raw_file = raw_override
+        if raw_file or spec.raw:
+            warning_msg = f"CLI --raw option overrides "
+            if raw_file:
+                warning_msg += f"positional argument '{raw_file}'"
+            if raw_file and spec.raw:
+                warning_msg += f" and YAML raw: field '{spec.raw}'"
+            elif spec.raw:
+                warning_msg += f"YAML raw: field '{spec.raw}'"
+    elif raw_file:
+        # Positional argument takes second precedence
+        final_raw_file = raw_file
+        if spec.raw:
+            warning_msg = f"CLI positional argument '{raw_file}' overrides YAML raw: field '{spec.raw}'"
+    elif spec.raw:
+        # YAML raw: field takes lowest precedence
+        final_raw_file = Path(spec.raw)
+    else:
+        # No raw file specified anywhere
+        raise click.ClickException(
+            "No raw file specified. Use one of:\n"
+            "  1. --raw option: y2p plot spec.yaml --raw sim.raw\n"
+            "  2. Positional argument: y2p plot spec.yaml sim.raw\n"
+            "  3. Add 'raw: sim.raw' to your YAML specification file"
+        )
 
-        # Emit warning if CLI overrides YAML
-        if warning_msg:
-            click.echo(f"Warning: {warning_msg}", err=True)
+    # Emit warning if CLI overrides YAML
+    if warning_msg:
+        click.echo(f"Warning: {warning_msg}", err=True)
 
-        # Apply CLI overrides via helper
-        _apply_overrides(spec, width=width, height=height, title=title, theme=theme)
+    # Apply CLI overrides via helper
+    _apply_overrides(spec, width=width, height=height, title=title, theme=theme)
 
-        # Load plotting data through the shared normalization adapter.
-        if final_raw_file.suffix.lower() == ".csv":
-            click.echo(f"Loading CSV data from: {final_raw_file}")
-        else:
-            click.echo(f"Loading SPICE data from: {final_raw_file}")
+    # Load plotting data through the shared normalization adapter.
+    if final_raw_file.suffix.lower() == ".csv":
+        click.echo(f"Loading CSV data from: {final_raw_file}")
+    else:
+        click.echo(f"Loading SPICE data from: {final_raw_file}")
+    try:
         data = normalize_plot_data(final_raw_file)
+    except FileNotFoundError as exc:
+        raise click.ClickException(f"Input data file not found: {exc}") from exc
+    except (ValueError, TypeError) as exc:
+        raise click.ClickException(f"Failed to load plotting data: {exc}") from exc
 
-        # Create the plot using v1.0.0 API
-        click.echo("Creating plot...")
+    # Create the plot using v1.0.0 API
+    click.echo("Creating plot...")
+    try:
         fig = create_plot(data, spec, show=False)
+    except KeyError as exc:
+        raise click.ClickException(f"Missing signal in plotting data: {exc}") from exc
+    except ValueError as exc:
+        raise click.ClickException(f"Failed to create plot: {exc}") from exc
 
-        if output_file:
-            # Save to file
-            click.echo(f"Saving plot to: {output_file}")
+    if output_file:
+        # Save to file
+        click.echo(f"Saving plot to: {output_file}")
+        try:
             _save_figure(fig, output_file)
-            click.echo("Plot saved successfully!")
-        else:
-            # Display the plot
-            click.echo("Displaying plot...")
-            # Configure renderer based on environment and CLI option
-            configure_plotly_renderer()
-            if renderer != "auto":
-                pio.renderers.default = renderer
-            click.echo(f"Using Plotly renderer: {pio.renderers.default}")
-            fig.show()
-
-    except FileNotFoundError as e:
-        click.echo(f"Error: {e}", err=True)
-        sys.exit(1)
-    except ValueError as e:
-        click.echo(f"Configuration Error: {e}", err=True)
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"Unexpected Error: {e}", err=True)
-        sys.exit(1)
+        except OSError as exc:
+            raise click.ClickException(
+                f"Failed to save plot to '{output_file}': {exc}"
+            ) from exc
+        click.echo("Plot saved successfully!")
+    else:
+        # Display the plot
+        click.echo("Displaying plot...")
+        # Configure renderer based on environment and CLI option
+        configure_plotly_renderer()
+        if renderer != "auto":
+            pio.renderers.default = renderer
+        click.echo(f"Using Plotly renderer: {pio.renderers.default}")
+        fig.show()
 
 
 @cli.command()
@@ -198,64 +207,61 @@ def init(raw_file: Path):
     init.formatter_class = CustomFormatter
     try:
         dataset = load_spice_raw(raw_file)
-        # Get signals from both coordinates and data variables (coordinates first for x-axis)
-        signals = list(dataset.coords.keys()) + list(dataset.data_vars.keys())
+    except FileNotFoundError as exc:
+        raise click.ClickException(str(exc)) from exc
+    except (ValueError, TypeError) as exc:
+        raise click.ClickException(f"Failed to load SPICE data: {exc}") from exc
 
-        if not signals:
-            click.echo("Error: No signals found in the raw file.", err=True)
-            sys.exit(1)
+    # Get signals from both coordinates and data variables (coordinates first for x-axis)
+    signals = list(dataset.coords.keys()) + list(dataset.data_vars.keys())
 
-        spec = CommentedMap()
-        spec.yaml_set_comment_before_after_key(
-            "title", before="Plot title (customize as needed)"
-        )
+    if not signals:
+        raise click.ClickException("No signals found in the raw file.")
 
-        spec["raw"] = DoubleQuotedScalarString(raw_file.name)
-        spec["title"] = DoubleQuotedScalarString(f"Analysis of {raw_file.name}")
+    spec = CommentedMap()
+    spec.yaml_set_comment_before_after_key(
+        "title", before="Plot title (customize as needed)"
+    )
 
-        x_comment = """X-axis configuration
+    spec["raw"] = DoubleQuotedScalarString(raw_file.name)
+    spec["title"] = DoubleQuotedScalarString(f"Analysis of {raw_file.name}")
+
+    x_comment = """X-axis configuration
 Independent variable of the simulation, default to the first signal in the raw file
 """
-        spec.yaml_set_comment_before_after_key("x", before=x_comment)
-        x_axis = CommentedMap()
-        x_axis["signal"] = DoubleQuotedScalarString(signals[0])
-        x_axis["label"] = DoubleQuotedScalarString(f"{signals[0]} (s)")
-        spec["x"] = x_axis
+    spec.yaml_set_comment_before_after_key("x", before=x_comment)
+    x_axis = CommentedMap()
+    x_axis["signal"] = DoubleQuotedScalarString(signals[0])
+    x_axis["label"] = DoubleQuotedScalarString(f"{signals[0]} (s)")
+    spec["x"] = x_axis
 
-        y_comment = """Y-axis configuration (add or remove axes as needed)
+    y_comment = """Y-axis configuration (add or remove axes as needed)
 The Y-axis is specified as a list of sub-axes with a synchronized X-axis.
 Even if you have only one Y-axis, you still need to specify it as a list.
 Signal format: <Legend Name>: <Signal Name from Raw File>
 """
-        spec.yaml_set_comment_before_after_key("y", before=y_comment)
-        y_axes = []
-        y_axis = CommentedMap()
-        y_axis["label"] = DoubleQuotedScalarString("Voltage (V)")
+    spec.yaml_set_comment_before_after_key("y", before=y_comment)
+    y_axes = []
+    y_axis = CommentedMap()
+    y_axis["label"] = DoubleQuotedScalarString("Voltage (V)")
 
-        y_signals = CommentedMap()
-        if len(signals) > 1:
-            for sig in signals[1:3]:
-                y_signals[sig] = DoubleQuotedScalarString(sig)
-        y_axis["signals"] = y_signals
-        y_axes.append(y_axis)
-        spec["y"] = y_axes
+    y_signals = CommentedMap()
+    if len(signals) > 1:
+        for sig in signals[1:3]:
+            y_signals[sig] = DoubleQuotedScalarString(sig)
+    y_axis["signals"] = y_signals
+    y_axes.append(y_axis)
+    spec["y"] = y_axes
 
-        dimensions_comment = "Plot height and width in pixels. Remove to use the default (full page width)."
-        spec.yaml_set_comment_before_after_key("height", before=dimensions_comment)
-        spec["height"] = 600
-        spec["width"] = 800
-        spec["show_rangeslider"] = True
+    dimensions_comment = "Plot height and width in pixels. Remove to use the default (full page width)."
+    spec.yaml_set_comment_before_after_key("height", before=dimensions_comment)
+    spec["height"] = 600
+    spec["width"] = 800
+    spec["show_rangeslider"] = True
 
-        yaml = YAML()
-        yaml.indent(mapping=2, sequence=4, offset=2)
-        yaml.dump(spec, sys.stdout)
-
-    except FileNotFoundError as e:
-        click.echo(f"Error: {e}", err=True)
-        sys.exit(1)
-    except Exception as e:
-        click.echo(f"An unexpected error occurred: {e}", err=True)
-        sys.exit(1)
+    yaml = YAML()
+    yaml.indent(mapping=2, sequence=4, offset=2)
+    yaml.dump(spec, sys.stdout)
 
 
 def _save_figure(fig, output_file: Path):
@@ -307,39 +313,39 @@ def signals(raw_file: Path, limit: int, show_all: bool, grep: Optional[str]):
     List available signals in a SPICE raw file.
 
     """
+    click.echo(f"Loading SPICE data from: {raw_file}")
     try:
-        click.echo(f"Loading SPICE data from: {raw_file}")
         dataset = load_spice_raw(raw_file)
+    except FileNotFoundError as exc:
+        raise click.ClickException(str(exc)) from exc
+    except (ValueError, TypeError, RuntimeError) as exc:
+        raise click.ClickException(f"Failed to load SPICE data: {exc}") from exc
 
-        signals = list(dataset.coords.keys()) + list(dataset.data_vars.keys())
+    signals = list(dataset.coords.keys()) + list(dataset.data_vars.keys())
 
-        if grep:
-            import re
+    if grep:
+        import re
 
-            try:
-                original_signals = len(signals)
-                signals = [s for s in signals if re.search(grep, s)]
-                click.echo(
-                    f"\nFound {len(signals)} signals (out of {original_signals} total):"
-                )
-            except re.error as e:
-                raise click.ClickException(f"Invalid regular expression: {e}")
-        else:
-            click.echo(f"\nFound {len(signals)} signals:")
+        try:
+            original_signals = len(signals)
+            signals = [s for s in signals if re.search(grep, s)]
+            click.echo(
+                f"\nFound {len(signals)} signals (out of {original_signals} total):"
+            )
+        except re.error as exc:
+            raise click.ClickException(f"Invalid regular expression: {exc}") from exc
+    else:
+        click.echo(f"\nFound {len(signals)} signals:")
 
-        display_limit = len(signals) if show_all else limit
+    display_limit = len(signals) if show_all else limit
 
-        # Display signals with numbering
-        for i, signal in enumerate(signals[:display_limit], 1):
-            click.echo(f"  {i:2d}. {signal}")
+    # Display signals with numbering
+    for i, signal in enumerate(signals[:display_limit], 1):
+        click.echo(f"  {i:2d}. {signal}")
 
-        if len(signals) > display_limit:
-            click.echo(f"  ... and {len(signals) - display_limit} more signals")
-            click.echo(f"  (Use --limit {len(signals)} or -a to show all)")
-
-    except Exception as e:
-        click.echo(f"Error: {e}", err=True)
-        sys.exit(1)
+    if len(signals) > display_limit:
+        click.echo(f"  ... and {len(signals) - display_limit} more signals")
+        click.echo(f"  (Use --limit {len(signals)} or -a to show all)")
 
 
 signals.epilog = """
