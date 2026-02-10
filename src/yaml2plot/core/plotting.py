@@ -13,6 +13,7 @@ from pathlib import Path
 
 try:
     import xarray as xr
+
     HAS_XARRAY = True
 except ImportError:
     HAS_XARRAY = False
@@ -27,6 +28,63 @@ except ImportError:
 from .plotspec import PlotSpec
 
 
+def _dataset_to_dict(dataset: Any) -> Dict[str, np.ndarray]:
+    """Convert xarray Dataset-like objects to dict for plotting internals."""
+    data_dict: Dict[str, np.ndarray] = {}
+    for var in dataset.data_vars:
+        data_dict[var] = dataset[var].values
+    for coord in dataset.coords:
+        data_dict[coord] = dataset.coords[coord].values
+    return data_dict
+
+
+def _dataframe_to_dict(dataframe: Any) -> Dict[str, np.ndarray]:
+    """Convert pandas DataFrame-like objects to dict for plotting internals."""
+    data_dict: Dict[str, np.ndarray] = {
+        column: dataframe[column].to_numpy() for column in dataframe.columns
+    }
+
+    index_values = dataframe.index.to_numpy()
+    index_name = dataframe.index.name or "index"
+    data_dict[index_name] = index_values
+    if index_name != "index":
+        data_dict["index"] = index_values
+
+    return data_dict
+
+
+def normalize_plot_data(
+    data: Union[Dict[str, np.ndarray], str, "Path", "xr.Dataset", "pd.DataFrame"],
+) -> Dict[str, np.ndarray]:
+    """Normalize plotting input (dict/path/xarray/pandas) into dict form."""
+    if isinstance(data, dict):
+        return data
+
+    if isinstance(data, (str, Path)):
+        from ..loader import (
+            load_csv_data,
+            load_spice_raw,
+        )  # local import to avoid cycle
+
+        input_path = Path(data)
+        if input_path.suffix.lower() == ".csv":
+            dataframe = load_csv_data(data)
+            return _dataframe_to_dict(dataframe)
+
+        dataset = load_spice_raw(data)
+        return _dataset_to_dict(dataset)
+
+    if HAS_XARRAY and hasattr(data, "data_vars") and hasattr(data, "coords"):
+        return _dataset_to_dict(data)
+
+    if HAS_PANDAS and hasattr(data, "columns") and hasattr(data, "index"):
+        return _dataframe_to_dict(data)
+
+    raise TypeError(
+        "data must be a dict, pandas DataFrame, xarray Dataset, or file path (str/Path)"
+    )
+
+
 def plot(
     data: Union[Dict[str, np.ndarray], str, "Path", "xr.Dataset", "pd.DataFrame"],
     spec: PlotSpec | Dict[str, Any],
@@ -39,7 +97,7 @@ def plot(
     Args:
         data: Data source - can be:
             - Dict mapping signal name → numpy array
-            - Raw file path (str/Path) 
+            - Raw file path (str/Path)
             - xarray Dataset (preferred for new code)
             - pandas DataFrame
         spec: PlotSpec configuration object **or** raw configuration ``dict``
@@ -54,53 +112,9 @@ def plot(
         ValueError: If required signals are missing from data
     """
     # ---------------------------------------------
-    # 1) Normalize *data* argument – support file paths and xarray Datasets
+    # 1) Normalize *data* argument – shared adapter used by API and CLI
     # ---------------------------------------------
-    def _dataset_to_dict(dataset):
-        """Convert xarray Dataset to dict for internal plotting logic."""
-        data_dict = {}
-        # Add all data variables
-        for var in dataset.data_vars:
-            data_dict[var] = dataset[var].values
-        # Add all coordinates (time, frequency, etc.)
-        for coord in dataset.coords:
-            data_dict[coord] = dataset.coords[coord].values
-        return data_dict
-
-    def _dataframe_to_dict(dataframe):
-        """Convert pandas DataFrame to dict for internal plotting logic."""
-        data_dict = {column: dataframe[column].to_numpy() for column in dataframe.columns}
-
-        index_values = dataframe.index.to_numpy()
-        index_name = dataframe.index.name or "index"
-        data_dict[index_name] = index_values
-        if index_name != "index":
-            data_dict["index"] = index_values
-
-        return data_dict
-
-    if isinstance(data, (str, Path)):
-        # Lazy-load on-demand for path-based workflows.
-        from ..loader import load_csv_data, load_spice_raw  # local import to avoid cycle
-
-        input_path = Path(data)
-        if input_path.suffix.lower() == ".csv":
-            dataframe = load_csv_data(data)
-            data = _dataframe_to_dict(dataframe)  # type: ignore[assignment]
-        else:
-            dataset = load_spice_raw(data)
-            data = _dataset_to_dict(dataset)  # type: ignore[assignment]
-    elif HAS_XARRAY and hasattr(data, 'data_vars') and hasattr(data, 'coords'):
-        # xarray Dataset - convert to dict for internal plotting
-        data = _dataset_to_dict(data)  # type: ignore[assignment]
-    elif HAS_PANDAS and hasattr(data, "columns") and hasattr(data, "index"):
-        # pandas DataFrame - convert to dict for internal plotting
-        data = _dataframe_to_dict(data)  # type: ignore[assignment]
-    elif not isinstance(data, dict):
-        raise TypeError(
-            "data must be a dict, pandas DataFrame, xarray Dataset, or file path (str/Path)"
-        )
-
+    data = normalize_plot_data(data)
 
     # ---------------------------------------------
     # 2) Normalize *spec* argument

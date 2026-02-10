@@ -16,7 +16,7 @@ from ruamel.yaml.scalarstring import DoubleQuotedScalarString
 from ruamel.yaml.comments import CommentedMap
 
 from .core.plotspec import PlotSpec
-from .core.plotting import plot as create_plot
+from .core.plotting import normalize_plot_data, plot as create_plot
 from .loader import load_spice_raw
 from .utils.env import configure_plotly_renderer
 
@@ -153,14 +153,11 @@ def plot(
         # Load SPICE data using helper
         click.echo(f"Loading SPICE data from: {final_raw_file}")
         dataset = load_spice_raw(final_raw_file)
-        # Convert to dict for backward compatibility with existing logic
-        data = {var: dataset[var].values for var in dataset.data_vars}
-        for coord in dataset.coords:
-            data[coord] = dataset.coords[coord].values
+        data = normalize_plot_data(dataset)
 
         # Create the plot using v1.0.0 API
         click.echo("Creating plot...")
-        fig = create_plot(data, spec)
+        fig = create_plot(data, spec, show=False)
 
         if output_file:
             # Save to file
