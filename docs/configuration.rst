@@ -1,7 +1,7 @@
 Configuration Guide
 ===================
 
-*yaml2plot* 2.0.0 uses a single configuration model — :class:`yaml2plot.PlotSpec` — to describe everything you want to see in a plot.  A PlotSpec is simply structured data (YAML, JSON, or a Python dictionary) that defines:
+*yaml2plot* 2.0.1 uses a single configuration model — :class:`yaml2plot.PlotSpec` — to describe everything you want to see in a plot. A PlotSpec is simply structured data (YAML, JSON, or a Python dictionary) that defines:
 
 * **x** – which signal provides the x-axis (usually ``time`` or ``frequency``)
 * **y** – one or more groups of y-axis traces
@@ -38,7 +38,12 @@ Creating a PlotSpec
    }
    spec = y2p.PlotSpec.model_validate(dict_spec)
 
-Once you have a PlotSpec, pass it to :func:`yaml2plot.plot` together with the *data* dictionary returned by :func:`yaml2plot.load_spice_raw`.
+Once you have a PlotSpec, pass it to :func:`yaml2plot.plot` together with any supported data input:
+
+* ``xarray.Dataset`` returned by :func:`yaml2plot.load_spice_raw`
+* a dict-like signal mapping
+* a pandas ``DataFrame``
+* a ``.raw`` or ``.csv`` path for lazy loading
 
 Schema Reference
 ----------------
@@ -69,7 +74,7 @@ Here's a comprehensive example showing common configuration options:
 Processed / Derived Signals
 ---------------------------
 
-To plot *derived* signals just insert them into the same ``data`` dictionary – they behave exactly like native SPICE traces.
+To plot *derived* signals, add them directly to the loaded ``xarray.Dataset`` (or to a dict-like mapping if you use one) and reference them in the same PlotSpec.
 
 .. code-block:: python
 
@@ -78,7 +83,7 @@ To plot *derived* signals just insert them into the same ``data`` dictionary –
    data = y2p.load_spice_raw("simulation.raw")
    power = data["v(out)"] * data["i(out)"]
 
-   # Append the derived signal to the data dict
+   # Add the derived signal to the dataset
    data["power"] = power
 
    spec = y2p.PlotSpec.from_yaml("""
@@ -118,4 +123,4 @@ Best Practices
 
 ---
 
-That's all you need to describe plots with *yaml2plot* 2.0.0.  Explore the :doc:`quickstart` for an end-to-end example, or dive into :doc:`api` for full symbol documentation. 
+That's all you need to describe plots with *yaml2plot* 2.0.1. Explore the :doc:`quickstart` for an end-to-end example, or dive into :doc:`api` for full symbol documentation.

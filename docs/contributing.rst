@@ -162,7 +162,7 @@ Architecture Guidelines
 Core Principles
 ~~~~~~~~~~~~~~~
 
-* **Explicit Configuration**: No auto-detection or magic behavior
+* **Explicit Configuration**: Prefer explicit PlotSpec/data inputs while keeping practical auto-detection where documented
 * **Path Object Support**: Use ``pathlib.Path`` throughout
 * **Comprehensive Validation**: Clear error messages guide users
 * **Test-Driven Development**: Tests define expected behavior
@@ -170,15 +170,14 @@ Core Principles
 Module Organization
 ~~~~~~~~~~~~~~~~~~~
 
-* ``src/yaml2plot/`` – Public package root
-  * ``__init__.py`` – Exposes **only** ``load_spice_raw``, ``PlotSpec``, ``plot``, and ``WaveDataset``
-  * ``core/`` – Core implementation modules
-    * ``plotspec.py`` – Pydantic model that defines the PlotSpec schema
-    * ``plotting.py`` – Pure function-based plotting helpers and ``plot``
-    * ``wavedataset.py`` – Thin wrapper around ``spicelib`` for fast raw-file loading
-  * ``loader.py`` – Convenience wrapper that powers ``load_spice_raw``
-  * ``cli.py`` – Command-line interface built on the v2.0.0 API
-  * ``utils/`` – Small internal utilities (e.g. ``env.py`` for renderer selection)
+* ``src/yaml2plot/`` – Public package root.
+* ``src/yaml2plot/__init__.py`` – Public API exports (``plot``, ``PlotSpec``, ``WaveDataset``, ``load_spice_raw``, ``load_spice_raw_batch``, ``load_csv_data``, ``load_csv_data_batch``, ``set_renderer``).
+* ``src/yaml2plot/core/plotspec.py`` – Pydantic model that defines the PlotSpec schema.
+* ``src/yaml2plot/core/plotting.py`` – Function-based plotting helpers and ``plot``.
+* ``src/yaml2plot/core/wavedataset.py`` – Thin wrapper around ``spicelib`` for fast raw-file loading.
+* ``src/yaml2plot/loader.py`` – Convenience wrappers for SPICE raw and CSV loading helpers.
+* ``src/yaml2plot/cli.py`` – Command-line interface built on the current v2.x API.
+* ``src/yaml2plot/utils/`` – Small internal utilities (e.g. ``env.py`` for renderer selection).
 
 Legacy files (``reader.py``, ``config.py``, ``plotter.py``) were removed in 1.0.0 – do **not** add code to those names.
 

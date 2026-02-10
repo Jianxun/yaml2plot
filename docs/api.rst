@@ -1,7 +1,7 @@
 API Reference
 =============
 
-yaml2plot 2.0.0 exposes a streamlined, function-oriented public API built around three explicit steps:
+yaml2plot 2.0.1 exposes a streamlined, function-oriented public API built around three explicit steps:
 
 1. **Data Loading** – Load raw SPICE data into Python with :func:`yaml2plot.load_spice_raw` *or* let :func:`yaml2plot.plot` load it lazily from a file path.
 2. **Configuration** – Describe what you want to plot using :class:`yaml2plot.PlotSpec` (YAML, file, or dictionary input).
