@@ -40,12 +40,18 @@ def _dataset_to_dict(dataset: Any) -> Dict[str, np.ndarray]:
 
 def _dataframe_to_dict(dataframe: Any) -> Dict[str, np.ndarray]:
     """Convert pandas DataFrame-like objects to dict for plotting internals."""
+    index_name = dataframe.index.name or "index"
+    if "index" in dataframe.columns and index_name == "index":
+        raise ValueError(
+            "Ambiguous DataFrame schema: found a column named 'index' while the DataFrame index is unnamed (or also named 'index'). "
+            "Rename the 'index' column or assign an explicit index name and set x.signal accordingly."
+        )
+
     data_dict: Dict[str, np.ndarray] = {
         column: dataframe[column].to_numpy() for column in dataframe.columns
     }
 
     index_values = dataframe.index.to_numpy()
-    index_name = dataframe.index.name or "index"
     data_dict[index_name] = index_values
     if index_name != "index":
         data_dict["index"] = index_values
@@ -135,7 +141,8 @@ def plot(
     x_signal = config["x"]["signal"]
     if x_signal not in data:
         raise ValueError(
-            f"X-axis signal '{x_signal}' not found in data. Available: {list(data.keys())}"
+            f"X-axis signal '{x_signal}' not found in data. Available: {list(data.keys())}. "
+            "For DataFrame/CSV input, set x.signal to an existing column, the DataFrame index name, or 'index'."
         )
     x_data = data[x_signal]
 

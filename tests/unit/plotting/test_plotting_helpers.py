@@ -187,6 +187,29 @@ class TestPlotDataFrameHandling:
         fig = plot(df, spec, show=False)
         np.testing.assert_array_equal(fig.data[0].x, [0, 1])
 
+    def test_plot_dataframe_missing_x_signal_has_actionable_error(self):
+        pd = pytest.importorskip("pandas")
+        df = pd.DataFrame({"vout": [0.0, 0.9]})
+
+        spec = PlotSpec.from_yaml(
+            """
+        x: {signal: "time"}
+        y:
+          - label: "Voltage (V)"
+            signals: {Output: "vout"}
+        """
+        )
+
+        with pytest.raises(ValueError, match="DataFrame/CSV input"):
+            plot(df, spec, show=False)
+
+    def test_dataframe_index_alias_ambiguity_raises(self):
+        pd = pytest.importorskip("pandas")
+        df = pd.DataFrame({"index": [10, 11], "vout": [0.0, 0.9]})
+
+        with pytest.raises(ValueError, match="Ambiguous DataFrame schema"):
+            normalize_plot_data(df)
+
 
 class TestPlotCsvPathRouting:
     def test_csv_path_uses_csv_loader(self, tmp_path):

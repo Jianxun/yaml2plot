@@ -124,7 +124,17 @@ def load_csv_data(
         )
 
     file_path = _validate_file_path(csv_file, kind="CSV file")
-    dataframe = pd.read_csv(file_path)
+    try:
+        dataframe = pd.read_csv(file_path)
+    except pd.errors.EmptyDataError as exc:
+        raise ValueError(
+            f"CSV schema error in '{file_path}': file is empty or missing a header row."
+        ) from exc
+
+    if dataframe.shape[1] < 2:
+        raise ValueError(
+            f"CSV schema error in '{file_path}': expected at least 2 columns (x + one signal), got {dataframe.shape[1]}."
+        )
 
     if x_column is not None:
         if x_column not in dataframe.columns:
