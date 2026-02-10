@@ -28,7 +28,7 @@ T-009:
   pr: 29
   merged: true
 T-010:
-  status: ready
+  status: in_progress
   pr: null
   merged: false
 T-011:
