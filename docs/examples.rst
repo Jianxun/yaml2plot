@@ -2,7 +2,7 @@ Examples
 ========
 
 .. note::
-   All code below targets *yaml2plot* **2.0.0**.  The modern workflow is:
+   All code below targets *yaml2plot* **2.0.1**.  The modern workflow is:
 
    1. ``data = y2p.load_spice_raw("my.raw")`` – obtain an ``xarray.Dataset`` with signals and metadata
    2. ``spec = y2p.PlotSpec.from_yaml(""" ... """)`` – build a PlotSpec (YAML string or file)

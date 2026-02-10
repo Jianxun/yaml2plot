@@ -16,7 +16,7 @@ Features
 
 * **Interactive Plotly Visualization** – Modern, web-based plots with zoom, pan, and hover
 * **Command Line Interface** – Quick plotting from terminal with ``y2p plot`` 
-* **Clean API** – only four public symbols: ``load_spice_raw``, ``PlotSpec``, ``plot``, and ``WaveDataset``
+* **Flexible data API** – supports ``xarray.Dataset`` (``load_spice_raw``), dict-like mappings, pandas ``DataFrame`` inputs, and ``.raw``/``.csv`` path routing via ``plot()``
 * **YAML-first configuration** – version-controlled plot specs that live next to your simulations
 * **Processed-data integration** – mix NumPy-derived signals with raw traces in a single call
 * **Automatic renderer detection** – works seamlessly in Jupyter, VS Code, or standalone scripts
@@ -179,4 +179,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

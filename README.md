@@ -287,7 +287,7 @@ make docs-serve  # Opens at http://localhost:8000
 
 ## Version
 
-Current version: **2.0.0**
+Current version: **2.0.1**
 
 ---
 
