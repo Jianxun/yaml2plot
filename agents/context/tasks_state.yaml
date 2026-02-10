@@ -12,8 +12,8 @@ T-005:
   pr: 25
   merged: true
 T-006:
-  status: in_progress
-  pr: null
+  status: ready_for_review
+  pr: 26
   merged: false
 T-007:
   status: ready
