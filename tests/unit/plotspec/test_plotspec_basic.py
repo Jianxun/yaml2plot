@@ -50,6 +50,82 @@ class TestPlotSpecFromYaml:
         with pytest.raises(ValueError):
             PlotSpec.from_yaml(multi_yaml)
 
+    def test_unknown_top_level_key_is_rejected(self):
+        yaml_str = """
+        x: {signal: time}
+        y:
+          - label: Voltage
+            signals: {Out: v(out)}
+        unexpected: true
+        """
+        with pytest.raises(ValueError, match="unexpected"):
+            PlotSpec.from_yaml(yaml_str)
+
+    def test_unknown_nested_key_is_rejected(self):
+        yaml_str = """
+        x:
+          signal: time
+          bogus: value
+        y:
+          - label: Voltage
+            signals: {Out: v(out)}
+        """
+        with pytest.raises(ValueError, match="bogus"):
+            PlotSpec.from_yaml(yaml_str)
+
+    def test_invalid_scale_is_rejected(self):
+        yaml_str = """
+        x:
+          signal: time
+          scale: logarithmic
+        y:
+          - label: Voltage
+            signals: {Out: v(out)}
+        """
+        with pytest.raises(ValueError, match="scale"):
+            PlotSpec.from_yaml(yaml_str)
+
+    def test_invalid_range_is_rejected(self):
+        yaml_str = """
+        x:
+          signal: time
+          range: [10, 1]
+        y:
+          - label: Voltage
+            signals: {Out: v(out)}
+        """
+        with pytest.raises(ValueError, match="range"):
+            PlotSpec.from_yaml(yaml_str)
+
+    def test_empty_y_list_is_rejected(self):
+        yaml_str = """
+        x: {signal: time}
+        y: []
+        """
+        with pytest.raises(ValueError, match="y"):
+            PlotSpec.from_yaml(yaml_str)
+
+    def test_empty_signals_map_is_rejected(self):
+        yaml_str = """
+        x: {signal: time}
+        y:
+          - label: Voltage
+            signals: {}
+        """
+        with pytest.raises(ValueError, match="signals"):
+            PlotSpec.from_yaml(yaml_str)
+
+    def test_validation_error_includes_field_path(self):
+        yaml_str = """
+        x: {signal: time}
+        y:
+          - label: Voltage
+            signals: {Out: v(out)}
+            scale: bad
+        """
+        with pytest.raises(ValueError, match="y.0.scale"):
+            PlotSpec.from_yaml(yaml_str)
+
 
 class TestPlotSpecRoundTrip:
     """Verify to_dict() produces expected keys and values."""
