@@ -3,6 +3,7 @@ venv/
 env/
 ENV/
 .venv/
+.env
 
 # Python
 __pycache__/
@@ -71,5 +72,7 @@ Thumbs.db
 git_commit_message*
 
 context/
+!agents/context/
+!agents/context/**
 .cursor/
 CLAUDE.local.md

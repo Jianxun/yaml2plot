@@ -1,0 +1,195 @@
+schema_version: 2
+current_sprint:
+  - id: T-001
+    title: Migrate repository planning from legacy context/ to agents/context/
+    owner: executor
+    dod:
+      - Create canonical agents context files with required schema and structure.
+      - Backfill contract, status, and codebase map from existing repository reality.
+      - Add workflow scripts required by role files and verify they run.
+      - Document migration note so future sessions stop using context/todo.md as source of truth.
+    verify:
+      - ./venv/bin/python scripts/lint_tasks_state.py
+      - ./venv/bin/python scripts/check_unfinished_tasks.py
+    links:
+      scratchpad: agents/scratchpads/T-001.md
+      pr: https://github.com/Jianxun/yaml2plot/pull/23
+    files:
+      - agents/context/contract.md
+      - agents/context/tasks.yaml
+      - agents/context/tasks_state.yaml
+      - agents/context/tasks_icebox.yaml
+      - agents/context/tasks_archived.yaml
+      - agents/context/project_status.md
+      - agents/context/codebase_map.md
+      - agents/context/lessons.md
+      - scripts/lint_tasks_state.py
+      - scripts/check_unfinished_tasks.py
+      - scripts/send_imessage.sh
+  - id: T-005
+    title: Tighten PlotSpec YAML validation and diagnostics
+    owner: executor
+    depends_on:
+      - T-001
+    dod:
+      - Enforce strict schema handling for PlotSpec YAML (unknown keys must not be silently accepted).
+      - Add validators for scale/range and non-empty y/signals constraints.
+      - Improve user-facing validation errors for malformed YAML/spec inputs.
+    verify:
+      - pytest tests/unit/plotspec -v
+    links:
+      scratchpad: agents/scratchpads/T-005.md
+    files:
+      - src/yaml2plot/core/plotspec.py
+      - tests/unit/plotspec
+  - id: T-006
+    title: Introduce unified plotting data adapter
+    owner: executor
+    depends_on:
+      - T-001
+    dod:
+      - Create a single normalization path for plotting inputs used by both Python API and CLI.
+      - Eliminate duplicated xarray->dict conversion logic in CLI and plotting layers.
+      - Preserve current behavior for dict/xarray/raw path inputs.
+    verify:
+      - pytest tests/unit/plotting -v
+      - pytest tests/unit/cli -v
+    links:
+      scratchpad: agents/scratchpads/T-006.md
+    files:
+      - src/yaml2plot/core/plotting.py
+      - src/yaml2plot/cli.py
+      - src/yaml2plot/core
+      - tests/unit/plotting
+      - tests/unit/cli
+  - id: T-004
+    title: Add pandas DataFrame + CSV support to plotting data pipeline
+    owner: executor
+    depends_on:
+      - T-005
+      - T-006
+    dod:
+      - Extend `plot()` data normalization to accept `pandas.DataFrame` inputs while preserving existing dict and xarray support.
+      - Add CSV helper loader APIs in `src/yaml2plot/loader.py` and export them from package `__init__`.
+      - Optionally support `.csv` path auto-detection in `plot()` path input flow with clear error handling.
+      - Add/refresh unit tests for DataFrame input, CSV loading, and path routing behavior.
+      - Update user docs for DataFrame/CSV usage and x-axis/index mapping expectations.
+    verify:
+      - pytest tests/unit/plotting -v
+      - pytest tests/unit/loader -v
+      - pytest tests/workflows -k "plot or yaml" -v
+      - ./venv/bin/python scripts/lint_tasks_state.py
+    links:
+      scratchpad: agents/scratchpads/T-004.md
+    files:
+      - src/yaml2plot/core/plotting.py
+      - src/yaml2plot/loader.py
+      - src/yaml2plot/__init__.py
+      - tests/unit/plotting
+      - tests/unit/loader
+      - tests/workflows
+      - README.md
+      - docs
+  - id: T-007
+    title: Harden DataFrame/CSV integration parity and migration notes
+    owner: executor
+    depends_on:
+      - T-004
+    dod:
+      - Ensure CLI and Python API behavior are consistent for DataFrame/CSV inputs.
+      - Add negative-path tests (missing x, ambiguous index, bad CSV schema) with actionable errors.
+      - Add migration notes from dict-centric examples to DataFrame-friendly patterns.
+    verify:
+      - pytest tests/unit/plotting -v
+      - pytest tests/unit/loader -v
+      - pytest tests/workflows -k "plot or yaml" -v
+    links:
+      scratchpad: agents/scratchpads/T-007.md
+    files:
+      - src/yaml2plot/core/plotting.py
+      - src/yaml2plot/loader.py
+      - src/yaml2plot/cli.py
+      - tests/unit/plotting
+      - tests/unit/loader
+      - tests/workflows
+      - README.md
+      - docs
+  - id: T-009
+    title: Improve loader coordinate inference policy and ambiguity handling
+    owner: executor
+    depends_on:
+      - T-007
+    dod:
+      - Make x-axis coordinate inference deterministic and documented.
+      - Add explicit handling/warnings for ambiguous coordinate choices.
+      - Add tests for time/frequency/other-signal fallback scenarios.
+    verify:
+      - pytest tests/unit/loader -v
+    links:
+      scratchpad: agents/scratchpads/T-009.md
+    files:
+      - src/yaml2plot/loader.py
+      - tests/unit/loader
+      - README.md
+      - docs
+  - id: T-010
+    title: Reduce import-time side effects and improve CLI error clarity
+    owner: executor
+    depends_on:
+      - T-006
+    dod:
+      - Remove or minimize renderer configuration side effects during package import.
+      - Replace broad CLI exception handling with typed, actionable error paths.
+      - Keep user-facing CLI behavior stable for normal success cases.
+    verify:
+      - pytest tests/unit/cli -v
+      - pytest tests/workflows -k "cli or plot" -v
+    links:
+      scratchpad: agents/scratchpads/T-010.md
+    files:
+      - src/yaml2plot/__init__.py
+      - src/yaml2plot/cli.py
+      - tests/unit/cli
+      - tests/workflows
+  - id: T-008
+    title: Resolve runtime/package version drift and documentation drift
+    owner: executor
+    depends_on:
+      - T-007
+      - T-010
+    dod:
+      - Ensure `pyproject.toml` and package runtime version metadata match.
+      - Update README/docs examples to match current supported data contracts and API behavior.
+      - Remove stale tuple/dict-only narratives that conflict with implemented behavior.
+    verify:
+      - pytest -q
+      - make docs
+    links:
+      scratchpad: agents/scratchpads/T-008.md
+    files:
+      - pyproject.toml
+      - src/yaml2plot/__init__.py
+      - README.md
+      - docs
+  - id: T-011
+    title: Repository hygiene cleanup for generated artifacts
+    owner: executor
+    depends_on:
+      - T-008
+    dod:
+      - Stop tracking generated coverage/build artifacts unless explicitly required.
+      - Align ignore patterns and CI expectations for coverage outputs.
+      - Document repository hygiene expectations in contributor-facing docs.
+    verify:
+      - git ls-files | rg 'coverage.xml|htmlcov|__pycache__' || true
+      - pytest -q
+    links:
+      scratchpad: agents/scratchpads/T-011.md
+    files:
+      - .gitignore
+      - .github/workflows
+      - README.md
+      - docs
+backlog: []
+exploration_candidates:
+  - Evaluate whether to support archive schema versioning in dataset attrs before v2.1 release.
