@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import xarray as xr
+import warnings
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
@@ -154,6 +155,71 @@ class TestLoadSpiceRawXarray:
         # Check global attributes (metadata)
         assert ds.attrs["analysis_type"] == "transient"
         assert ds.attrs["corner"] == "tt"
+
+    def test_prefers_time_over_frequency_with_warning(self, tmp_path):
+        """When both canonical coordinates exist, choose time and warn."""
+        f = tmp_path / "test.raw"
+        f.write_text("dummy")
+
+        mock_ds = MagicMock()
+        mock_ds.signals = ["frequency", "time", "v(out)"]
+        mock_ds.metadata = {}
+        mock_ds.get_signal.side_effect = lambda name: {
+            "frequency": np.array([1e3, 1e4, 1e5]),
+            "time": np.array([0.0, 1e-9, 2e-9]),
+            "v(out)": np.array([0.1, 0.2, 0.3]),
+        }[name]
+
+        with patch.object(wv_loader.WaveDataset, "from_raw", return_value=mock_ds):
+            with pytest.warns(UserWarning, match="Ambiguous coordinate candidates"):
+                ds = wv_loader.load_spice_raw(f)
+
+        assert "time" in ds.coords
+        assert "frequency" in ds.data_vars
+        assert ds["frequency"].dims == ("time",)
+
+    def test_uses_frequency_when_time_absent_without_warning(self, tmp_path):
+        f = tmp_path / "test.raw"
+        f.write_text("dummy")
+
+        mock_ds = MagicMock()
+        mock_ds.signals = ["frequency", "gain"]
+        mock_ds.metadata = {}
+        mock_ds.get_signal.side_effect = lambda name: {
+            "frequency": np.array([1e3, 1e4, 1e5]),
+            "gain": np.array([10.0, 9.0, 8.0]),
+        }[name]
+
+        with patch.object(wv_loader.WaveDataset, "from_raw", return_value=mock_ds):
+            with warnings.catch_warnings(record=True) as record:
+                warnings.simplefilter("always")
+                ds = wv_loader.load_spice_raw(f)
+
+        assert len(record) == 0
+        assert "frequency" in ds.coords
+        assert "gain" in ds.data_vars
+        assert ds["gain"].dims == ("frequency",)
+
+    def test_fallbacks_to_first_signal_with_warning(self, tmp_path):
+        f = tmp_path / "test.raw"
+        f.write_text("dummy")
+
+        mock_ds = MagicMock()
+        mock_ds.signals = ["sweep", "v(out)", "v(in)"]
+        mock_ds.metadata = {}
+        mock_ds.get_signal.side_effect = lambda name: {
+            "sweep": np.array([0.0, 0.5, 1.0]),
+            "v(out)": np.array([0.1, 0.2, 0.3]),
+            "v(in)": np.array([1.8, 1.8, 1.8]),
+        }[name]
+
+        with patch.object(wv_loader.WaveDataset, "from_raw", return_value=mock_ds):
+            with pytest.warns(UserWarning, match="Unable to infer canonical coordinate"):
+                ds = wv_loader.load_spice_raw(f)
+
+        assert "axis" in ds.coords
+        np.testing.assert_array_equal(ds.coords["axis"].values, np.array([0.0, 0.5, 1.0]))
+        assert set(ds.data_vars) == {"v(out)", "v(in)"}
 
 
 class TestLoadCsvData:

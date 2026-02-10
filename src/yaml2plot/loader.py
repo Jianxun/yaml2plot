@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+import warnings
 
 import numpy as np
 import xarray as xr
@@ -69,20 +70,42 @@ def load_spice_raw(raw_file: _PathLike) -> xr.Dataset:
     # Get all signals
     signals = wave_data.signals
     
-    # Find coordinate axis (time, frequency, or first signal)
+    # Find coordinate axis deterministically: time > frequency > first signal.
+    if not signals:
+        raise ValueError("SPICE raw file contains no signals")
+
     coord_signal = None
     dim_name = None
-    
-    if 'time' in [s.lower() for s in signals]:
-        coord_signal = next(s for s in signals if s.lower() == 'time')
-        dim_name = 'time'
-    elif 'frequency' in [s.lower() for s in signals]:
-        coord_signal = next(s for s in signals if s.lower() == 'frequency')
-        dim_name = 'frequency'
+
+    lower_signals = [s.lower() for s in signals]
+    has_time = "time" in lower_signals
+    has_frequency = "frequency" in lower_signals
+
+    if has_time and has_frequency:
+        coord_signal = next(s for s in signals if s.lower() == "time")
+        dim_name = "time"
+        warnings.warn(
+            "Ambiguous coordinate candidates found ('time' and 'frequency'); "
+            "using 'time' as x-axis coordinate.",
+            UserWarning,
+            stacklevel=2,
+        )
+    elif has_time:
+        coord_signal = next(s for s in signals if s.lower() == "time")
+        dim_name = "time"
+    elif has_frequency:
+        coord_signal = next(s for s in signals if s.lower() == "frequency")
+        dim_name = "frequency"
     else:
         # Fallback: use first signal as coordinate
         coord_signal = signals[0]
-        dim_name = 'axis'
+        dim_name = "axis"
+        warnings.warn(
+            f"Unable to infer canonical coordinate ('time' or 'frequency'); "
+            f"using first signal '{coord_signal}' as x-axis coordinate.",
+            UserWarning,
+            stacklevel=2,
+        )
     
     # Add coordinate
     coord_data = wave_data.get_signal(coord_signal)
