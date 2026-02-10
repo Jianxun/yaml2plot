@@ -24,7 +24,7 @@ T-008:
   pr: 28
   merged: true
 T-009:
-  status: review_in_progress
+  status: review_clean
   pr: 29
   merged: false
 T-010:
