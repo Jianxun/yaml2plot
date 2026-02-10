@@ -72,5 +72,7 @@ Thumbs.db
 git_commit_message*
 
 context/
+!agents/context/
+!agents/context/**
 .cursor/
 CLAUDE.local.md

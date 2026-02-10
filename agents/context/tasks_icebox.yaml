@@ -1,0 +1,41 @@
+schema_version: 1
+icebox:
+  - id: T-002
+    title: Implement v2.1 signal archiving foundation
+    owner: executor
+    depends_on:
+      - T-001
+    dod:
+      - Add archive-save flow for plotting workflow (Python API + CLI path).
+      - Persist enough metadata to regenerate plot context from archive.
+      - Cover save/load happy path and error path with unit + workflow tests.
+    verify:
+      - pytest tests/unit -v
+      - pytest tests/workflows -k "archive or plot" -v
+    links:
+      scratchpad: agents/scratchpads/T-002.md
+      spec: context/xarray_migration_plan.md
+    files:
+      - src/yaml2plot/core/plotting.py
+      - src/yaml2plot/cli.py
+      - src/yaml2plot/loader.py
+      - tests/unit
+      - tests/workflows
+  - id: T-003
+    title: Add signal helper expressions (dB/mag/phase/diff/common)
+    owner: architect
+    depends_on:
+      - T-002
+    dod:
+      - Define expression grammar for YAML signal references.
+      - Implement helper operations with deterministic behavior and test coverage.
+      - Keep backward compatibility for direct signal name usage.
+    verify:
+      - pytest tests/unit -v
+      - pytest tests/workflows -k "signal or yaml" -v
+    links:
+      scratchpad: agents/scratchpads/T-003.md
+    files:
+      - src/yaml2plot
+      - tests/unit
+      - tests/workflows
