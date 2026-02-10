@@ -8,7 +8,7 @@ T-004:
   pr: 24
   merged: true
 T-005:
-  status: ready_for_review
+  status: review_clean
   pr: 25
   merged: false
 T-006:
