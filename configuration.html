@@ -1,0 +1,246 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuration Guide &mdash; yaml2plot 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://jianxun.github.io/yaml2plot/configuration.html"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=f5cff4aa"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="PlotSpec Schema Reference" href="schema.html" />
+    <link rel="prev" title="Quick Start Guide" href="quickstart.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            yaml2plot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-plotspec">Creating a PlotSpec</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#schema-reference">Schema Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-plotspec">Example PlotSpec</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#processed-derived-signals">Processed / Derived Signals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#multiple-configurations">Multiple Configurations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#best-practices">Best Practices</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="schema.html">PlotSpec Schema Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: white" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">yaml2plot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Configuration Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/configuration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="configuration-guide">
+<h1>Configuration Guide<a class="headerlink" href="#configuration-guide" title="Link to this heading"></a></h1>
+<p><em>yaml2plot</em> 2.0.1 uses a single configuration model — <a class="reference internal" href="_autosummary/yaml2plot.PlotSpec.html#yaml2plot.PlotSpec" title="yaml2plot.PlotSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">yaml2plot.PlotSpec</span></code></a> — to describe everything you want to see in a plot. A PlotSpec is simply structured data (YAML, JSON, or a Python dictionary) that defines:</p>
+<ul class="simple">
+<li><p><strong>x</strong> – which signal provides the x-axis (usually <code class="docutils literal notranslate"><span class="pre">time</span></code> or <code class="docutils literal notranslate"><span class="pre">frequency</span></code>)</p></li>
+<li><p><strong>y</strong> – one or more groups of y-axis traces</p></li>
+<li><p>optional figure-level options such as <strong>title</strong></p></li>
+</ul>
+<p>This page explains every option, shows practical examples, and demonstrates how to build PlotSpecs from files, strings, or dictionaries.</p>
+<section id="creating-a-plotspec">
+<h2>Creating a PlotSpec<a class="headerlink" href="#creating-a-plotspec" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">yaml2plot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">y2p</span>
+
+<span class="c1"># from a YAML file</span>
+<span class="n">spec</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">PlotSpec</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;config.yaml&quot;</span><span class="p">)</span>
+
+<span class="c1"># from an inline YAML string</span>
+<span class="n">spec</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">PlotSpec</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">title: &quot;Transient Analysis&quot;</span>
+<span class="s2">x:</span>
+<span class="s2"> signal: &quot;time&quot;</span>
+<span class="s2"> label: &quot;Time (s)&quot;</span>
+<span class="s2">y:</span>
+<span class="s2">  - label: &quot;Voltage (V)&quot;</span>
+<span class="s2">    signals: {OUT: &quot;v(out)&quot;}</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># from a Python dict (raises ValidationError on mistakes)</span>
+<span class="n">dict_spec</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Dict Example&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;signal&quot;</span><span class="p">:</span> <span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Time (s)&quot;</span><span class="p">},</span>
+    <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Current&quot;</span><span class="p">,</span> <span class="s2">&quot;signals&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;M1&quot;</span><span class="p">:</span> <span class="s2">&quot;i(m1)&quot;</span><span class="p">}}],</span>
+<span class="p">}</span>
+<span class="n">spec</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">PlotSpec</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">dict_spec</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once you have a PlotSpec, pass it to <a class="reference internal" href="_autosummary/yaml2plot.plot.html#yaml2plot.plot" title="yaml2plot.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">yaml2plot.plot()</span></code></a> together with any supported data input:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> returned by <a class="reference internal" href="_autosummary/yaml2plot.load_spice_raw.html#yaml2plot.load_spice_raw" title="yaml2plot.load_spice_raw"><code class="xref py py-func docutils literal notranslate"><span class="pre">yaml2plot.load_spice_raw()</span></code></a></p></li>
+<li><p>a dict-like signal mapping</p></li>
+<li><p>a pandas <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code></p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">.raw</span></code> or <code class="docutils literal notranslate"><span class="pre">.csv</span></code> path for lazy loading</p></li>
+</ul>
+</section>
+<section id="schema-reference">
+<h2>Schema Reference<a class="headerlink" href="#schema-reference" title="Link to this heading"></a></h2>
+<p>For the complete field-by-field documentation of all configuration options, see the <a class="reference internal" href="schema.html"><span class="doc">PlotSpec Schema Reference</span></a> reference page, which is automatically generated from the Pydantic model definitions.</p>
+</section>
+<section id="example-plotspec">
+<h2>Example PlotSpec<a class="headerlink" href="#example-plotspec" title="Link to this heading"></a></h2>
+<p>Here’s a comprehensive example showing common configuration options:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Amplifier</span><span class="nv"> </span><span class="s">Analysis&quot;</span>
+<span class="nt">x</span><span class="p">:</span>
+<span class="w"> </span><span class="nt">signal</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;time&quot;</span>
+<span class="w"> </span><span class="nt">label</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Time</span><span class="nv"> </span><span class="s">(s)&quot;</span>
+<span class="nt">y</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">label</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Input</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">Output</span><span class="nv"> </span><span class="s">Voltage</span><span class="nv"> </span><span class="s">(V)&quot;</span>
+<span class="w">    </span><span class="nt">signals</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">VIN</span><span class="p">:</span><span class="w">  </span><span class="s">&quot;v(in)&quot;</span>
+<span class="w">      </span><span class="nt">VOUT</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;v(out)&quot;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">label</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Current</span><span class="nv"> </span><span class="s">(A)&quot;</span>
+<span class="w">    </span><span class="nt">scale</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;log&quot;</span>
+<span class="w">    </span><span class="nt">signals</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">IM1</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;i(m1)&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="processed-derived-signals">
+<h2>Processed / Derived Signals<a class="headerlink" href="#processed-derived-signals" title="Link to this heading"></a></h2>
+<p>To plot <em>derived</em> signals, add them directly to the loaded <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> (or to a dict-like mapping if you use one) and reference them in the same PlotSpec.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span><span class="o">,</span><span class="w"> </span><span class="nn">yaml2plot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">y2p</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">load_spice_raw</span><span class="p">(</span><span class="s2">&quot;simulation.raw&quot;</span><span class="p">)</span>
+<span class="n">power</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;v(out)&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;i(out)&quot;</span><span class="p">]</span>
+
+<span class="c1"># Add the derived signal to the dataset</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;power&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">power</span>
+
+<span class="n">spec</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">PlotSpec</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">x:</span>
+<span class="s2"> signal: &quot;time&quot;</span>
+<span class="s2"> label: &quot;Time (s)&quot;</span>
+<span class="s2">y:</span>
+<span class="s2">  - label: &quot;Voltage &amp; Power&quot;</span>
+<span class="s2">    signals:</span>
+<span class="s2">      OUT:   &quot;v(out)&quot;</span>
+<span class="s2">      Power: &quot;power&quot;   # shorthand for data key</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="multiple-configurations">
+<h2>Multiple Configurations<a class="headerlink" href="#multiple-configurations" title="Link to this heading"></a></h2>
+<p>For complex analyses you can create multiple PlotSpecs and call <a class="reference internal" href="_autosummary/yaml2plot.plot.html#yaml2plot.plot" title="yaml2plot.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">yaml2plot.plot()</span></code></a> multiple times:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">voltage_spec</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">PlotSpec</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;voltage.yaml&quot;</span><span class="p">)</span>
+<span class="n">current_spec</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">PlotSpec</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s2">&quot;current.yaml&quot;</span><span class="p">)</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">load_spice_raw</span><span class="p">(</span><span class="s2">&quot;simulation.raw&quot;</span><span class="p">)</span>
+<span class="n">fig_v</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">voltage_spec</span><span class="p">)</span>
+<span class="n">fig_i</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">current_spec</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>Use descriptive labels</strong> and include units.</p></li>
+<li><p><strong>Group related signals</strong> on the same axis for easy comparison.</p></li>
+<li><p>Choose <strong>log scales</strong> for signals spanning many orders of magnitude.</p></li>
+<li><p>Keep YAML files next to your simulations so they can be version-controlled.</p></li>
+</ol>
+<p>—</p>
+<p>That’s all you need to describe plots with <em>yaml2plot</em> 2.0.1. Explore the <a class="reference internal" href="quickstart.html"><span class="doc">Quick Start Guide</span></a> for an end-to-end example, or dive into <a class="reference internal" href="api.html"><span class="doc">API Reference</span></a> for full symbol documentation.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quickstart.html" class="btn btn-neutral float-left" title="Quick Start Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="schema.html" class="btn btn-neutral float-right" title="PlotSpec Schema Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jianxun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

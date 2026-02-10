@@ -1,0 +1,270 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Start Guide &mdash; yaml2plot 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://jianxun.github.io/yaml2plot/quickstart.html"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=f5cff4aa"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuration Guide" href="configuration.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            yaml2plot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick Start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#option-a-cli-first-workflow">Option A: CLI-First Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#option-b-python-api-workflow">Option B: Python API Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#migration-notes-dict-dataframe-csv">Migration Notes (Dict -&gt; DataFrame/CSV)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema.html">PlotSpec Schema Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: white" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">yaml2plot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Quick Start Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/quickstart.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quick-start-guide">
+<h1>Quick Start Guide<a class="headerlink" href="#quick-start-guide" title="Link to this heading"></a></h1>
+<p>This guide provides two common workflows for using <code class="docutils literal notranslate"><span class="pre">y2p</span></code> to visualize your SPICE simulations.</p>
+<ul class="simple">
+<li><p><strong>Option A: CLI-First</strong> – The fastest way to get from a <code class="docutils literal notranslate"><span class="pre">.raw</span></code> file to an interactive plot. Perfect for quick, one-off visualizations.</p></li>
+<li><p><strong>Option B: Python API</strong> – The most flexible approach. Ideal for scripting, custom data processing, and embedding plots in notebooks or reports.</p></li>
+</ul>
+<p>Choose the workflow that best fits your needs.</p>
+<section id="option-a-cli-first-workflow">
+<h2>Option A: CLI-First Workflow<a class="headerlink" href="#option-a-cli-first-workflow" title="Link to this heading"></a></h2>
+<p>Get from a raw file to a plot in three steps using the <code class="docutils literal notranslate"><span class="pre">y2p</span></code> command-line tool.</p>
+<p><strong>Step 1: Generate a Plot Specification</strong></p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">y2p</span> <span class="pre">init</span></code> to create a template <code class="docutils literal notranslate"><span class="pre">spec.yaml</span></code> file from your simulation output. It automatically populates the file with the independent variable (like “time”) and a few available signals.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>y2p<span class="w"> </span>init<span class="w"> </span>your_simulation.raw<span class="w"> </span>&gt;<span class="w"> </span>spec.yaml
+</pre></div>
+</div>
+<p><strong>Step 2: Discover Signals</strong></p>
+<p>Find the exact names of the signals you want to plot with <code class="docutils literal notranslate"><span class="pre">y2p</span> <span class="pre">signals</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># List the first 10 signals</span>
+y2p<span class="w"> </span>signals<span class="w"> </span>your_simulation.raw
+
+<span class="c1"># List all signals</span>
+y2p<span class="w"> </span>signals<span class="w"> </span>your_simulation.raw<span class="w"> </span>--all
+
+<span class="c1"># Filter signals using a regular expression</span>
+y2p<span class="w"> </span>signals<span class="w"> </span>your_simulation.raw<span class="w"> </span>--grep<span class="w"> </span><span class="s2">&quot;v(out)&quot;</span>
+</pre></div>
+</div>
+<p><strong>Step 3: Plot</strong></p>
+<p>Edit your <code class="docutils literal notranslate"><span class="pre">spec.yaml</span></code> to include the signals you discovered, then use <code class="docutils literal notranslate"><span class="pre">y2p</span> <span class="pre">plot</span></code> to generate an interactive HTML file or display the plot directly.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># This command will open a browser window with your plot</span>
+y2p<span class="w"> </span>plot<span class="w"> </span>spec.yaml
+
+<span class="c1"># To save the plot to a file instead</span>
+y2p<span class="w"> </span>plot<span class="w"> </span>spec.yaml<span class="w"> </span>--output<span class="w"> </span>my_plot.html
+</pre></div>
+</div>
+<p>This approach is fast, requires no Python code, and keeps your plot configuration version-controlled alongside your simulation files.</p>
+</section>
+<section id="option-b-python-api-workflow">
+<h2>Option B: Python API Workflow<a class="headerlink" href="#option-b-python-api-workflow" title="Link to this heading"></a></h2>
+<p>For more advanced use cases, the Python API provides full control over data loading, processing, and plotting. This is ideal for Jupyter notebooks, custom analysis scripts, and automated report generation.</p>
+<p>The API follows a clear three-step workflow:</p>
+<ol class="arabic simple">
+<li><p><strong>Data Loading</strong> – Load the raw <code class="docutils literal notranslate"><span class="pre">.raw</span></code> file with <a class="reference internal" href="_autosummary/yaml2plot.load_spice_raw.html#yaml2plot.load_spice_raw" title="yaml2plot.load_spice_raw"><code class="xref py py-func docutils literal notranslate"><span class="pre">yaml2plot.load_spice_raw()</span></code></a>, load tabular data with <a class="reference internal" href="_autosummary/yaml2plot.load_csv_data.html#yaml2plot.load_csv_data" title="yaml2plot.load_csv_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">yaml2plot.load_csv_data()</span></code></a>, or pass file paths directly to <a class="reference internal" href="_autosummary/yaml2plot.plot.html#yaml2plot.plot" title="yaml2plot.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">yaml2plot.plot()</span></code></a>.</p></li>
+<li><p><strong>Configuration</strong> – Describe what you want to see using <a class="reference internal" href="_autosummary/yaml2plot.PlotSpec.html#yaml2plot.PlotSpec" title="yaml2plot.PlotSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">yaml2plot.PlotSpec</span></code></a>.</p></li>
+<li><p><strong>Plotting</strong> – Call <a class="reference internal" href="_autosummary/yaml2plot.plot.html#yaml2plot.plot" title="yaml2plot.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">yaml2plot.plot()</span></code></a> to get a Plotly figure.</p></li>
+</ol>
+<p><strong>Minimal Example</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">yaml2plot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">y2p</span>
+
+<span class="c1"># 1. Load data from a .raw file (returns xarray.Dataset)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">load_spice_raw</span><span class="p">(</span><span class="s2">&quot;your_simulation.raw&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Signals available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)[:</span><span class="mi">5</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
+<span class="c1"># 2. Configure the plot using a YAML string</span>
+<span class="n">spec</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">PlotSpec</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">title: &quot;My Simulation Results&quot;</span>
+<span class="s2">x:</span>
+<span class="s2">  signal: &quot;time&quot;</span>
+<span class="s2">  label: &quot;Time (s)&quot;</span>
+<span class="s2">y:</span>
+<span class="s2">  - label: &quot;Voltage (V)&quot;</span>
+<span class="s2">    signals:</span>
+<span class="s2">      Output: &quot;v(out)&quot;</span>
+<span class="s2">      Input:  &quot;v(in)&quot;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># 3. Create and display the plot</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Advanced Example: Plotting Derived Signals</strong></p>
+<p>Because the API gives you direct access to loaded data, you can easily perform calculations and plot the results.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml2plot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">y2p</span>
+
+<span class="c1"># Load the data and build a dict view for derived signals</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">load_spice_raw</span><span class="p">(</span><span class="s2">&quot;your_simulation.raw&quot;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">dataset</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="p">}</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+<span class="c1"># Calculate a new, derived signal</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;diff_voltage&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;v(out_p)&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;v(out_n)&quot;</span><span class="p">]</span>
+
+<span class="c1"># Create a spec that plots both raw and derived signals</span>
+<span class="n">spec</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">PlotSpec</span><span class="o">.</span><span class="n">from_yaml</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">title: &quot;Differential Output Voltage&quot;</span>
+<span class="s2">x:</span>
+<span class="s2">  signal: &quot;time&quot;</span>
+<span class="s2">  label: &quot;Time (s)&quot;</span>
+<span class="s2">y:</span>
+<span class="s2">  - label: &quot;Voltage (V)&quot;</span>
+<span class="s2">    signals:</span>
+<span class="s2">      VOUT_P: &quot;v(out_p)&quot;</span>
+<span class="s2">      VOUT_N: &quot;v(out_n)&quot;</span>
+<span class="s2">      VOUT_DIFF: &quot;diff_voltage&quot;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create and display the plot</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>DataFrame and CSV Inputs</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">yaml2plot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">y2p</span>
+
+<span class="c1"># Option 1: load CSV into a DataFrame explicitly</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">load_csv_data</span><span class="p">(</span><span class="s2">&quot;signals.csv&quot;</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+
+<span class="c1"># Option 2: let plot() route &quot;.csv&quot; path inputs automatically</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">y2p</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;signals.csv&quot;</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For DataFrame inputs, <code class="docutils literal notranslate"><span class="pre">x.signal</span></code> can reference:</p>
+<ul class="simple">
+<li><p>a DataFrame column name</p></li>
+<li><p>the DataFrame index name</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">index</span></code> as a generic alias for the DataFrame index</p></li>
+</ul>
+</section>
+<section id="migration-notes-dict-dataframe-csv">
+<h2>Migration Notes (Dict -&gt; DataFrame/CSV)<a class="headerlink" href="#migration-notes-dict-dataframe-csv" title="Link to this heading"></a></h2>
+<p>If your existing scripts build <code class="docutils literal notranslate"><span class="pre">data</span></code> dictionaries manually, you can migrate incrementally:</p>
+<ul class="simple">
+<li><p>Keep your existing <a class="reference internal" href="_autosummary/yaml2plot.PlotSpec.html#yaml2plot.PlotSpec" title="yaml2plot.PlotSpec"><code class="xref py py-class docutils literal notranslate"><span class="pre">yaml2plot.PlotSpec</span></code></a> and switch input loading to <code class="docutils literal notranslate"><span class="pre">load_csv_data(...)</span></code>.</p></li>
+<li><p>Or pass a <code class="docutils literal notranslate"><span class="pre">.csv</span></code> path directly to <a class="reference internal" href="_autosummary/yaml2plot.plot.html#yaml2plot.plot" title="yaml2plot.plot"><code class="xref py py-func docutils literal notranslate"><span class="pre">yaml2plot.plot()</span></code></a>.</p></li>
+<li><p>Update <code class="docutils literal notranslate"><span class="pre">x.signal</span></code> so it matches a DataFrame column, the DataFrame index name, or <code class="docutils literal notranslate"><span class="pre">index</span></code>.</p></li>
+<li><p>Avoid ambiguous schemas where an unnamed DataFrame index and a real <code class="docutils literal notranslate"><span class="pre">index</span></code> column coexist; rename the column or set an explicit index name.</p></li>
+<li><p>CLI <code class="docutils literal notranslate"><span class="pre">y2p</span> <span class="pre">plot</span></code> uses the same path routing as Python <code class="docutils literal notranslate"><span class="pre">plot()</span></code>: <code class="docutils literal notranslate"><span class="pre">.csv</span></code> inputs are parsed as tabular data, while non-CSV inputs are treated as SPICE raw files.</p></li>
+</ul>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Dive into the <a class="reference internal" href="configuration.html"><span class="doc">Configuration Guide</span></a> guide for all available YAML options.</p></li>
+<li><p>Browse the <a class="reference internal" href="cli.html"><span class="doc">CLI Reference</span></a> reference for more command-line features.</p></li>
+<li><p>Consult the <a class="reference internal" href="api.html"><span class="doc">API Reference</span></a> reference for full details on each function.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="configuration.html" class="btn btn-neutral float-right" title="Configuration Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jianxun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

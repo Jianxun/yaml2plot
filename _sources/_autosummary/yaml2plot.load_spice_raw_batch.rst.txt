@@ -1,0 +1,6 @@
+﻿yaml2plot.load\_spice\_raw\_batch
+=================================
+
+.. currentmodule:: yaml2plot
+
+.. autofunction:: load_spice_raw_batch

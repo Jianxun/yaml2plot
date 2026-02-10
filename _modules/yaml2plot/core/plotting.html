@@ -1,0 +1,601 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>yaml2plot.core.plotting &mdash; yaml2plot 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://jianxun.github.io/yaml2plot/_modules/yaml2plot/core/plotting.html"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=f5cff4aa"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            yaml2plot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../schema.html">PlotSpec Schema Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">CLI Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: white" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">yaml2plot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">yaml2plot.core.plotting</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for yaml2plot.core.plotting</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">v1.0.0 Standalone plotting functions.</span>
+
+<span class="sd">This module provides standalone plotting functions that work with</span>
+<span class="sd">Dict[str, np.ndarray] data and PlotSpec configuration, following</span>
+<span class="sd">the v1.0.0 architecture design.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">plotly.graph_objects</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">go</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+
+    <span class="n">HAS_XARRAY</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">HAS_XARRAY</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+    <span class="n">HAS_PANDAS</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">HAS_PANDAS</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.plotspec</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlotSpec</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dataset_to_dict</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert xarray Dataset-like objects to dict for plotting internals.&quot;&quot;&quot;</span>
+    <span class="n">data_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+        <span class="n">data_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">for</span> <span class="n">coord</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+        <span class="n">data_dict</span><span class="p">[</span><span class="n">coord</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">coord</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">return</span> <span class="n">data_dict</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dataframe_to_dict</span><span class="p">(</span><span class="n">dataframe</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert pandas DataFrame-like objects to dict for plotting internals.&quot;&quot;&quot;</span>
+    <span class="n">index_name</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="s2">&quot;index&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;index&quot;</span> <span class="ow">in</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">columns</span> <span class="ow">and</span> <span class="n">index_name</span> <span class="o">==</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Ambiguous DataFrame schema: found a column named &#39;index&#39; while the DataFrame index is unnamed (or also named &#39;index&#39;). &quot;</span>
+            <span class="s2">&quot;Rename the &#39;index&#39; column or assign an explicit index name and set x.signal accordingly.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">data_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">column</span><span class="p">:</span> <span class="n">dataframe</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">columns</span>
+    <span class="p">}</span>
+
+    <span class="n">index_values</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">data_dict</span><span class="p">[</span><span class="n">index_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">index_values</span>
+    <span class="k">if</span> <span class="n">index_name</span> <span class="o">!=</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span>
+        <span class="n">data_dict</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">index_values</span>
+
+    <span class="k">return</span> <span class="n">data_dict</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize_plot_data</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Path&quot;</span><span class="p">,</span> <span class="s2">&quot;xr.Dataset&quot;</span><span class="p">,</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize plotting input (dict/path/xarray/pandas) into dict form.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">..loader</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+            <span class="n">load_csv_data</span><span class="p">,</span>
+            <span class="n">load_spice_raw</span><span class="p">,</span>
+        <span class="p">)</span>  <span class="c1"># local import to avoid cycle</span>
+
+        <span class="n">input_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">input_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.csv&quot;</span><span class="p">:</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">load_csv_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_dataframe_to_dict</span><span class="p">(</span><span class="n">dataframe</span><span class="p">)</span>
+
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">load_spice_raw</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_dataset_to_dict</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">HAS_XARRAY</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;data_vars&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;coords&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_dataset_to_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">HAS_PANDAS</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;columns&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_dataframe_to_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+        <span class="s2">&quot;data must be a dict, pandas DataFrame, xarray Dataset, or file path (str/Path)&quot;</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="plot">
+<a class="viewcode-back" href="../../../_autosummary/yaml2plot.plot.html#yaml2plot.plot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Path&quot;</span><span class="p">,</span> <span class="s2">&quot;xr.Dataset&quot;</span><span class="p">,</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">],</span>
+    <span class="n">spec</span><span class="p">:</span> <span class="n">PlotSpec</span> <span class="o">|</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create Plotly figure from data and PlotSpec configuration.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data: Data source - can be:</span>
+<span class="sd">            - Dict mapping signal name → numpy array</span>
+<span class="sd">            - Raw file path (str/Path)</span>
+<span class="sd">            - xarray Dataset (preferred for new code)</span>
+<span class="sd">            - pandas DataFrame</span>
+<span class="sd">        spec: PlotSpec configuration object **or** raw configuration ``dict``</span>
+<span class="sd">        show: When *True* (default) immediately display the figure via</span>
+<span class="sd">              ``fig.show()`` – handy for interactive use.  Tests can pass</span>
+<span class="sd">              ``show=False`` to suppress GUI pop-ups.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Plotly ``go.Figure`` instance</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If required signals are missing from data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># ---------------------------------------------</span>
+    <span class="c1"># 1) Normalize *data* argument – shared adapter used by API and CLI</span>
+    <span class="c1"># ---------------------------------------------</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">normalize_plot_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="c1"># ---------------------------------------------</span>
+    <span class="c1"># 2) Normalize *spec* argument</span>
+    <span class="c1"># ---------------------------------------------</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">PlotSpec</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">spec</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;spec must be a PlotSpec instance or configuration dict&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Create figure and apply layout</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">create_figure</span><span class="p">()</span>
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">create_layout</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
+
+    <span class="c1"># Get X-axis data</span>
+    <span class="n">x_signal</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">][</span><span class="s2">&quot;signal&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">x_signal</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;X-axis signal &#39;</span><span class="si">{</span><span class="n">x_signal</span><span class="si">}</span><span class="s2">&#39; not found in data. Available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">. &quot;</span>
+            <span class="s2">&quot;For DataFrame/CSV input, set x.signal to an existing column, the DataFrame index name, or &#39;index&#39;.&quot;</span>
+        <span class="p">)</span>
+    <span class="n">x_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">x_signal</span><span class="p">]</span>
+
+    <span class="c1"># Add traces for each Y-axis</span>
+    <span class="k">for</span> <span class="n">y_axis_idx</span><span class="p">,</span> <span class="n">y_spec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]):</span>
+        <span class="c1"># Determine Y-axis ID</span>
+        <span class="n">y_axis_id</span> <span class="o">=</span> <span class="s2">&quot;y&quot;</span> <span class="k">if</span> <span class="n">y_axis_idx</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;y</span><span class="si">{</span><span class="n">y_axis_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Add each signal in this Y-axis</span>
+        <span class="k">for</span> <span class="n">legend_name</span><span class="p">,</span> <span class="n">signal_key</span> <span class="ow">in</span> <span class="n">y_spec</span><span class="p">[</span><span class="s2">&quot;signals&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Support legacy &quot;data.&quot; prefix used in documentation examples</span>
+            <span class="n">lookup_key</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">signal_key</span><span class="p">[</span><span class="mi">5</span><span class="p">:]</span> <span class="k">if</span> <span class="n">signal_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;data.&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">signal_key</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">lookup_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Signal &#39;</span><span class="si">{</span><span class="n">signal_key</span><span class="si">}</span><span class="s2">&#39; not found in data. Available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+            <span class="n">y_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">lookup_key</span><span class="p">]</span>
+            <span class="n">add_waveform</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">legend_name</span><span class="p">,</span> <span class="n">y_axis</span><span class="o">=</span><span class="n">y_axis_id</span><span class="p">)</span>
+
+    <span class="c1"># Show figure for interactive workflows if requested</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">fig</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_figure</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create empty Plotly figure with basic setup.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Empty Plotly Figure object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_configure_title</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create title configuration for Plotly figure.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config: Configuration dictionary from PlotSpec.to_dict()</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Title configuration dictionary (empty if no title)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">title_config</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">):</span>
+        <span class="n">title_config</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title_x&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+            <span class="s2">&quot;xanchor&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title_xanchor&quot;</span><span class="p">,</span> <span class="s2">&quot;center&quot;</span><span class="p">),</span>
+        <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">title_config</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_configure_dimensions</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create figure dimensions configuration for Plotly figure.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config: Configuration dictionary from PlotSpec.to_dict()</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dimensions configuration dictionary (empty if no dimensions specified)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dimensions_config</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;width&quot;</span><span class="p">):</span>
+        <span class="n">dimensions_config</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;height&quot;</span><span class="p">):</span>
+        <span class="n">dimensions_config</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;height&quot;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">dimensions_config</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_configure_theme_and_legend</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create theme and legend configuration for Plotly figure.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config: Configuration dictionary from PlotSpec.to_dict()</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Theme and legend configuration dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">theme_legend_config</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Theme</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;theme&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;theme&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;plotly&quot;</span><span class="p">:</span>
+        <span class="n">theme_legend_config</span><span class="p">[</span><span class="s2">&quot;template&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;theme&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Legend</span>
+    <span class="n">theme_legend_config</span><span class="p">[</span><span class="s2">&quot;showlegend&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;show_legend&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">theme_legend_config</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_configure_x_axis</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create X-axis configuration for Plotly figure.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config: Configuration dictionary from PlotSpec.to_dict()</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        X-axis configuration dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x_spec</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="c1"># Use custom label if provided, otherwise fall back to signal key</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">x_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">x_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;signal&quot;</span><span class="p">,</span> <span class="s2">&quot;X-axis&quot;</span><span class="p">)</span>
+
+    <span class="n">x_axis_config</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;xaxis&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">title</span><span class="p">,</span>
+            <span class="s2">&quot;showgrid&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;grid&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+            <span class="s2">&quot;rangeslider&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;visible&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;show_rangeslider&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)},</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Configure axis type</span>
+    <span class="n">axis_type</span> <span class="o">=</span> <span class="s2">&quot;log&quot;</span> <span class="k">if</span> <span class="n">x_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span> <span class="k">else</span> <span class="s2">&quot;linear&quot;</span>
+    <span class="n">x_axis_config</span><span class="p">[</span><span class="s2">&quot;xaxis&quot;</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">axis_type</span>
+
+    <span class="c1"># Add range support</span>
+    <span class="k">if</span> <span class="n">x_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;range&quot;</span><span class="p">):</span>
+        <span class="n">x_axis_config</span><span class="p">[</span><span class="s2">&quot;xaxis&quot;</span><span class="p">][</span><span class="s2">&quot;range&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_spec</span><span class="p">[</span><span class="s2">&quot;range&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Add engineering notation for all plots</span>
+    <span class="c1"># Use SI prefixes (1G, 1M, 1k) instead of American notation (1B, 1M, 1K)</span>
+    <span class="c1"># This provides consistent engineering notation across all axes</span>
+    <span class="n">x_axis_config</span><span class="p">[</span><span class="s2">&quot;xaxis&quot;</span><span class="p">][</span><span class="s2">&quot;exponentformat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;SI&quot;</span>
+
+    <span class="k">return</span> <span class="n">x_axis_config</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calculate_y_axis_domains</span><span class="p">(</span><span class="n">num_y_axes</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate Y-axis domain splits for multi-axis plots.</span>
+
+<span class="sd">    First Y-axis appears at the top (matching YAML order), subsequent axes below.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        num_y_axes: Number of Y-axes to create</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of [bottom, top] domain pairs for each Y-axis</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">num_y_axes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Single Y-axis gets full domain</span>
+        <span class="k">return</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Multiple Y-axes share the space from top to bottom</span>
+        <span class="n">gap</span> <span class="o">=</span> <span class="mf">0.05</span>
+        <span class="n">total_gap_space</span> <span class="o">=</span> <span class="n">gap</span> <span class="o">*</span> <span class="p">(</span><span class="n">num_y_axes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">effective_height</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">total_gap_space</span>
+        <span class="n">single_axis_height</span> <span class="o">=</span> <span class="n">effective_height</span> <span class="o">/</span> <span class="n">num_y_axes</span>
+
+        <span class="n">domains</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">current_top</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># Start from the top</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_y_axes</span><span class="p">):</span>
+            <span class="n">domain_bottom</span> <span class="o">=</span> <span class="n">current_top</span> <span class="o">-</span> <span class="n">single_axis_height</span>
+            <span class="c1"># Ensure domains are within [0, 1] bounds to avoid floating-point precision issues</span>
+            <span class="n">domain_bottom</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">domain_bottom</span><span class="p">)</span>
+            <span class="n">current_top</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">current_top</span><span class="p">)</span>
+
+            <span class="n">domains</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">domain_bottom</span><span class="p">,</span> <span class="n">current_top</span><span class="p">])</span>
+            <span class="n">current_top</span> <span class="o">=</span> <span class="n">domain_bottom</span> <span class="o">-</span> <span class="n">gap</span>  <span class="c1"># Move down for next axis</span>
+
+        <span class="k">return</span> <span class="n">domains</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_single_y_axis_config</span><span class="p">(</span>
+    <span class="n">y_spec</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">axis_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">global_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create configuration for a single Y-axis.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        y_spec: Y-axis specification from PlotSpec (label, log_scale, range, etc.)</span>
+<span class="sd">        domain: [bottom, top] domain values for this axis</span>
+<span class="sd">        axis_index: 0-based index of this axis</span>
+<span class="sd">        global_config: Global configuration for shared settings (grid, etc.)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Single Y-axis configuration dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Use custom label if provided, otherwise fall back to &quot;Y-axis&quot;</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">y_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;Y-axis </span><span class="si">{</span><span class="n">axis_index</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">axis_config</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">title</span><span class="p">,</span>
+        <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="n">domain</span><span class="p">,</span>
+        <span class="s2">&quot;showgrid&quot;</span><span class="p">:</span> <span class="n">global_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;grid&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Configure axis type</span>
+    <span class="n">axis_type</span> <span class="o">=</span> <span class="s2">&quot;log&quot;</span> <span class="k">if</span> <span class="n">y_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;log&quot;</span> <span class="k">else</span> <span class="s2">&quot;linear&quot;</span>
+    <span class="n">axis_config</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">axis_type</span>
+
+    <span class="c1"># Range support</span>
+    <span class="k">if</span> <span class="n">y_spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;range&quot;</span><span class="p">):</span>
+        <span class="n">axis_config</span><span class="p">[</span><span class="s2">&quot;range&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_spec</span><span class="p">[</span><span class="s2">&quot;range&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Add engineering notation for consistent SI prefix display</span>
+    <span class="c1"># Use SI prefixes (1G, 1M, 1k) instead of American notation (1B, 1M, 1K)</span>
+    <span class="n">axis_config</span><span class="p">[</span><span class="s2">&quot;exponentformat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;SI&quot;</span>
+
+    <span class="k">return</span> <span class="n">axis_config</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_config_zoom</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">num_y_axes</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Configure optimal zoom settings for Plotly figure.</span>
+
+<span class="sd">    Sets the zoom XY mode by default - enables flexible zooming on all axes.</span>
+<span class="sd">    Users can drag in X-only, Y-only, or XY directions naturally.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config: Configuration dictionary from PlotSpec.to_dict()</span>
+<span class="sd">        num_y_axes: Number of Y-axes in the plot</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Zoom configuration dictionary with optimal settings</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">zoom_config</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">num_y_axes</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">zoom_config</span>
+
+    <span class="c1"># Apply optimal zoom XY settings by default</span>
+    <span class="n">zoom_config</span><span class="p">[</span><span class="s2">&quot;dragmode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;zoom&quot;</span>
+    <span class="n">zoom_config</span><span class="p">[</span><span class="s2">&quot;xaxis.fixedrange&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Enable flexible zooming on all Y-axes</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_y_axes</span><span class="p">):</span>
+        <span class="n">axis_id</span> <span class="o">=</span> <span class="s2">&quot;yaxis&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;yaxis</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">zoom_config</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">axis_id</span><span class="si">}</span><span class="s2">.fixedrange&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">zoom_config</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_layout</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create layout configuration for Plotly figure.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config: Configuration dictionary from PlotSpec.to_dict()</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Layout configuration dictionary</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">layout</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Title configuration</span>
+    <span class="n">layout</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_configure_title</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
+
+    <span class="c1"># Figure dimensions</span>
+    <span class="n">layout</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_configure_dimensions</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
+
+    <span class="c1"># Theme and legend</span>
+    <span class="n">layout</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_configure_theme_and_legend</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
+
+    <span class="c1"># X-axis configuration</span>
+    <span class="n">layout</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_configure_x_axis</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
+
+    <span class="c1"># Y-axes configuration</span>
+    <span class="n">num_y_axes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+
+    <span class="k">if</span> <span class="n">num_y_axes</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Calculate Y-axis domains for multi-axis plots</span>
+        <span class="n">domains</span> <span class="o">=</span> <span class="n">_calculate_y_axis_domains</span><span class="p">(</span><span class="n">num_y_axes</span><span class="p">)</span>
+
+        <span class="c1"># Configure each Y-axis</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">y_spec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]):</span>
+            <span class="n">axis_key</span> <span class="o">=</span> <span class="s2">&quot;yaxis&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;yaxis</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="n">axis_config</span> <span class="o">=</span> <span class="n">_create_single_y_axis_config</span><span class="p">(</span>
+                <span class="n">y_spec</span><span class="o">=</span><span class="n">y_spec</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">domains</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">axis_index</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">global_config</span><span class="o">=</span><span class="n">config</span>
+            <span class="p">)</span>
+
+            <span class="n">layout</span><span class="p">[</span><span class="n">axis_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">axis_config</span>
+
+    <span class="c1"># Optimal zoom configuration (zoom XY mode by default)</span>
+    <span class="n">layout</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_config_zoom</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">num_y_axes</span><span class="p">))</span>
+
+    <span class="c1"># Zoom buttons functionality has been removed from v1.0.0.</span>
+
+    <span class="k">return</span> <span class="n">layout</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">add_waveform</span><span class="p">(</span>
+    <span class="n">fig</span><span class="p">:</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">,</span>
+    <span class="n">x_data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">y_data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">y_axis</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add single waveform trace to figure.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fig: Plotly figure to add trace to</span>
+<span class="sd">        x_data: X-axis data array</span>
+<span class="sd">        y_data: Y-axis data array</span>
+<span class="sd">        name: Trace name for legend</span>
+<span class="sd">        y_axis: Y-axis identifier (y, y2, y3, etc.)</span>
+<span class="sd">        **kwargs: Additional trace styling options</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert complex signals to real for Plotly compatibility</span>
+    <span class="c1"># For complex signals, take the real part (magnitude would be np.abs())</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">iscomplexobj</span><span class="p">(</span><span class="n">x_data</span><span class="p">):</span>
+        <span class="c1"># For most cases like frequency, time, we want the real part</span>
+        <span class="c1"># For AC analysis voltages/currents, users should use processed_data for magnitude/phase</span>
+        <span class="n">x_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">x_data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">iscomplexobj</span><span class="p">(</span><span class="n">y_data</span><span class="p">):</span>
+        <span class="c1"># For most cases like frequency, time, we want the real part</span>
+        <span class="c1"># For AC analysis voltages/currents, users should use processed_data for magnitude/phase</span>
+        <span class="n">y_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">y_data</span><span class="p">)</span>
+
+    <span class="c1"># Create scatter trace</span>
+    <span class="n">trace</span> <span class="o">=</span> <span class="n">go</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x_data</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y_data</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">yaxis</span><span class="o">=</span><span class="n">y_axis</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># Add trace to figure</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">add_trace</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jianxun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

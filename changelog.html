@@ -1,0 +1,263 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog &mdash; yaml2plot 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+    <link rel="canonical" href="https://jianxun.github.io/yaml2plot/changelog.html"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=f5cff4aa"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contributing" href="contributing.html" />
+    <link rel="prev" title="yaml2plot.WaveDataset" href="_autosummary/yaml2plot.WaveDataset.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: white" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            yaml2plot
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema.html">PlotSpec Schema Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">CLI Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-1-0-0-2025-07-xx">Version 1.0.0 (2025-07-XX)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#breaking-changes">⚠️ <strong>Breaking Changes</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#new-features-improvements">🎉 <strong>New Features &amp; Improvements</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#internal-developer">🔧 <strong>Internal / Developer</strong></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-1-0-2025-01-xx">Version 0.1.0 (2025-01-XX)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#architecture">Architecture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#supported-python">Supported Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#known-issues">Known Issues</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: white" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">yaml2plot</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Changelog</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/changelog.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading"></a></h1>
+<p>All notable changes to yaml2plot will be documented in this file.</p>
+<section id="version-1-0-0-2025-07-xx">
+<h2>Version 1.0.0 (2025-07-XX)<a class="headerlink" href="#version-1-0-0-2025-07-xx" title="Link to this heading"></a></h2>
+<p>🚀 <strong>Major Release – Complete API Overhaul</strong></p>
+<section id="breaking-changes">
+<h3>⚠️ <strong>Breaking Changes</strong><a class="headerlink" href="#breaking-changes" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Legacy API Removed</strong> – The following symbols no longer exist:
+* <code class="docutils literal notranslate"><span class="pre">SpiceData</span></code> class and <code class="docutils literal notranslate"><span class="pre">reader.py</span></code> module
+* <code class="docutils literal notranslate"><span class="pre">SpicePlotter</span></code> class and <code class="docutils literal notranslate"><span class="pre">plotter.py</span></code> module
+* Helper functions: <code class="docutils literal notranslate"><span class="pre">explore_signals()</span></code>, <code class="docutils literal notranslate"><span class="pre">load_spice()</span></code>, <code class="docutils literal notranslate"><span class="pre">config_from_file()</span></code>, <code class="docutils literal notranslate"><span class="pre">config_from_yaml()</span></code>, <code class="docutils literal notranslate"><span class="pre">validate_config()</span></code>
+* Configuration model <code class="docutils literal notranslate"><span class="pre">PlotConfig</span></code></p></li>
+<li><p><strong>Configuration Keys Lower-cased</strong> – <code class="docutils literal notranslate"><span class="pre">X</span></code>/<code class="docutils literal notranslate"><span class="pre">Y</span></code> → <code class="docutils literal notranslate"><span class="pre">x</span></code>/<code class="docutils literal notranslate"><span class="pre">y</span></code> for consistency.</p></li>
+<li><p><strong>Single Data Interface</strong> – Only <code class="docutils literal notranslate"><span class="pre">load_spice_raw</span></code> (returns <code class="docutils literal notranslate"><span class="pre">WaveDataset</span></code> + dict of NumPy arrays) is supported.</p></li>
+<li><p><strong>Unified Plot Function</strong> – <code class="docutils literal notranslate"><span class="pre">plot()</span></code> now accepts either a file path <em>or</em> pre-loaded data plus a <code class="docutils literal notranslate"><span class="pre">PlotSpec</span></code>.</p></li>
+<li><p><strong>Package Namespace Trimmed</strong> – Public API now exposes exactly four symbols: <code class="docutils literal notranslate"><span class="pre">load_spice_raw</span></code>, <code class="docutils literal notranslate"><span class="pre">PlotSpec</span></code>, <code class="docutils literal notranslate"><span class="pre">plot</span></code>, and <code class="docutils literal notranslate"><span class="pre">WaveDataset</span></code>.</p></li>
+</ul>
+</section>
+<section id="new-features-improvements">
+<h3>🎉 <strong>New Features &amp; Improvements</strong><a class="headerlink" href="#new-features-improvements" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>PlotSpec 1.0</strong> – Pydantic-validated model with helpers <code class="docutils literal notranslate"><span class="pre">PlotSpec.from_yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">PlotSpec.model_validate</span></code>.</p></li>
+<li><p><strong>Standalone Plotting Module</strong> – Refactored <code class="docutils literal notranslate"><span class="pre">core.plotting</span></code> with cleaner helpers, automatic zoom config, correct Y-axis ordering, and ~75 % complexity reduction.</p></li>
+<li><p><strong>Processed-Data Integration</strong> – Pass arbitrary NumPy arrays via <code class="docutils literal notranslate"><span class="pre">processed_data</span></code> for mixed raw/derived traces.</p></li>
+<li><p><strong>Complex-Number Handling</strong> – Transparent plotting of AC analysis results; magnitude/phase examples in docs.</p></li>
+<li><p><strong>Automatic Renderer Detection</strong> – Chooses the best Plotly renderer for Jupyter vs. CLI.</p></li>
+<li><p><strong>Higher Test Coverage</strong> – 91 % overall (96 % plotting, 88 % PlotSpec).</p></li>
+<li><p><strong>Documentation Revamp</strong> – Quick-start, configuration guide, API reference, and examples updated for the new workflow.</p></li>
+</ul>
+</section>
+<section id="internal-developer">
+<h3>🔧 <strong>Internal / Developer</strong><a class="headerlink" href="#internal-developer" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Pure <code class="docutils literal notranslate"><span class="pre">src/</span></code> layout with zero legacy code remaining.</p></li>
+<li><p>Clean CLI built on <code class="docutils literal notranslate"><span class="pre">WaveDataset</span></code> + <code class="docutils literal notranslate"><span class="pre">plot</span></code>.</p></li>
+<li><p>Extensive refactor of unit tests; legacy tests archived.</p></li>
+</ul>
+<p>—</p>
+</section>
+</section>
+<section id="version-0-1-0-2025-01-xx">
+<h2>Version 0.1.0 (2025-01-XX)<a class="headerlink" href="#version-0-1-0-2025-01-xx" title="Link to this heading"></a></h2>
+<p><strong>Initial Release</strong></p>
+<section id="features">
+<h3>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Core API Functions</strong>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">plot()</span></code> - Main plotting function with required configuration parameter</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">explore_signals()</span></code> - Signal discovery with categorized output</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">load_spice()</span></code> - SPICE file loading with Path object support</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">validate_config()</span></code> - Configuration validation with helpful warnings</p></li>
+</ul>
+</li>
+<li><p><strong>Configuration System</strong>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">config_from_file()</span></code> - Load configuration from YAML files</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">config_from_yaml()</span></code> - Create configuration from YAML strings</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">config_from_dict()</span></code> - Create configuration from Python dictionaries</p></li>
+<li><p>Multi-figure support for complex layouts</p></li>
+<li><p>Comprehensive validation with clear error messages</p></li>
+</ul>
+</li>
+<li><p><strong>SPICE Data Handling</strong>:</p>
+<ul>
+<li><p>Case-insensitive signal access (all normalized to lowercase)</p></li>
+<li><p>Automatic signal categorization (voltage, current, other)</p></li>
+<li><p>Modern pathlib integration throughout API</p></li>
+<li><p>Support for processed data integration</p></li>
+</ul>
+</li>
+<li><p><strong>Advanced Plotting</strong>:</p>
+<ul>
+<li><p>Plotly-based interactive plots</p></li>
+<li><p>Logarithmic scale support (both X and Y axes)</p></li>
+<li><p>Customizable plot titles, labels, and styling</p></li>
+<li><p>Grid and legend control</p></li>
+<li><p>Multi-subplot layouts</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="architecture">
+<h3>Architecture<a class="headerlink" href="#architecture" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Clean 3-Step Workflow</strong>: Discovery → Configuration → Plotting</p></li>
+<li><p><strong>Explicit over Implicit</strong>: No hidden magic, all behavior transparent</p></li>
+<li><p><strong>Modern src/ Layout</strong>: Ready for PyPI publication</p></li>
+<li><p><strong>Comprehensive Test Suite</strong>: 226 tests with 92% coverage</p></li>
+</ul>
+</section>
+<section id="dependencies">
+<h3>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>plotly &gt;= 5.0.0</p></li>
+<li><p>numpy &gt;= 1.20.0</p></li>
+<li><p>PyYAML &gt;= 6.0</p></li>
+<li><p>spicelib &gt;= 1.0.0</p></li>
+</ul>
+</section>
+<section id="supported-python">
+<h3>Supported Python<a class="headerlink" href="#supported-python" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Python 3.8+</p></li>
+<li><p>Tested on Python 3.8, 3.9, 3.10, 3.11, 3.12</p></li>
+</ul>
+</section>
+<section id="known-issues">
+<h3>Known Issues<a class="headerlink" href="#known-issues" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>None at initial release</p></li>
+</ul>
+<p>—</p>
+<p><strong>Legend</strong>:</p>
+<ul class="simple">
+<li><p>🎉 <strong>New Features</strong>: New functionality added</p></li>
+<li><p>🐛 <strong>Bug Fixes</strong>: Issues resolved</p></li>
+<li><p>📝 <strong>Documentation</strong>: Documentation improvements</p></li>
+<li><p>⚠️ <strong>Breaking Changes</strong>: Changes that break backward compatibility</p></li>
+<li><p>🔧 <strong>Internal</strong>: Internal improvements not affecting public API</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="_autosummary/yaml2plot.WaveDataset.html" class="btn btn-neutral float-left" title="yaml2plot.WaveDataset" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="contributing.html" class="btn btn-neutral float-right" title="Contributing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Jianxun.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

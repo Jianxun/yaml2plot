@@ -1,0 +1,6 @@
+﻿yaml2plot.load\_csv\_data\_batch
+================================
+
+.. currentmodule:: yaml2plot
+
+.. autofunction:: load_csv_data_batch
