@@ -72,8 +72,35 @@ class TestSignalsCommand:
     def test_signals_handles_loader_exception(self, tmp_path):
         raw_file = tmp_path / "fail.raw"
         raw_file.write_text("dummy")
-        with patch.object(cli_mod, "load_spice_raw", side_effect=Exception("boom")):
+        with patch.object(cli_mod, "load_spice_raw", side_effect=ValueError("boom")):
             runner = CliRunner()
             result = runner.invoke(cli_mod.cli, ["signals", str(raw_file)])
         assert result.exit_code == 1
-        assert "Error:" in result.output
+        assert "Failed to load SPICE data: boom" in result.output
+
+
+class TestPlotCommandErrorPaths:
+    def test_plot_reports_data_loading_failure(self, tmp_path):
+        spec_file = tmp_path / "spec.yaml"
+        raw_file = tmp_path / "sim.raw"
+        raw_file.touch()
+        spec_file.write_text(
+            f"""
+title: "Test"
+raw: "{raw_file}"
+x:
+  signal: "time"
+y:
+  - label: "Voltage"
+    signals:
+      V1: "v(out)"
+"""
+        )
+
+        with patch.object(cli_mod, "normalize_plot_data", side_effect=ValueError("bad raw file")):
+            runner = CliRunner()
+            result = runner.invoke(cli_mod.cli, ["plot", str(spec_file)])
+
+        assert result.exit_code == 1
+        assert "Configuration Error:" not in result.output
+        assert "Failed to load plotting data: bad raw file" in result.output
