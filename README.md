@@ -165,6 +165,18 @@ For DataFrame inputs, ``x.signal`` can reference:
 - the DataFrame index name
 - ``"index"`` as a generic alias for the DataFrame index
 
+**Migration Notes (Dict -> DataFrame/CSV)**
+
+- If you currently build ``data`` dictionaries manually, you can keep the same ``PlotSpec`` and switch to:
+  - ``df = y2p.load_csv_data("signals.csv")`` then ``y2p.plot(df, spec)``
+  - ``y2p.plot("signals.csv", spec)`` for path-based loading
+- When moving from dict keys to DataFrame inputs, make sure ``x.signal`` matches:
+  - a CSV/DataFrame column, or
+  - the DataFrame index name, or
+  - ``index`` for the generic index alias
+- Avoid ambiguous schemas where you have an unnamed DataFrame index and a real column named ``index``. Rename the column or name the index explicitly.
+- CLI ``y2p plot`` now follows the same path routing as Python ``plot()``: ``.csv`` paths are treated as tabular data, while non-CSV paths are treated as SPICE raw files.
+
 ## Development
 
 ### Setup Development Environment

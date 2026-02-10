@@ -142,6 +142,17 @@ For DataFrame inputs, ``x.signal`` can reference:
 * the DataFrame index name
 * ``index`` as a generic alias for the DataFrame index
 
+Migration Notes (Dict -> DataFrame/CSV)
+---------------------------------------
+
+If your existing scripts build ``data`` dictionaries manually, you can migrate incrementally:
+
+* Keep your existing :class:`yaml2plot.PlotSpec` and switch input loading to ``load_csv_data(...)``.
+* Or pass a ``.csv`` path directly to :func:`yaml2plot.plot`.
+* Update ``x.signal`` so it matches a DataFrame column, the DataFrame index name, or ``index``.
+* Avoid ambiguous schemas where an unnamed DataFrame index and a real ``index`` column coexist; rename the column or set an explicit index name.
+* CLI ``y2p plot`` uses the same path routing as Python ``plot()``: ``.csv`` inputs are parsed as tabular data, while non-CSV inputs are treated as SPICE raw files.
+
 Next Steps
 ----------
 
