@@ -31,7 +31,7 @@ class TestPlotSpecFromYaml:
 
     def test_invalid_yaml_raises_valueerror(self):
         bad_yaml = "title: [unbalanced braces"
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Invalid YAML syntax"):
             PlotSpec.from_yaml(bad_yaml)
 
     def test_multifigure_yaml_not_supported(self):
@@ -168,3 +168,10 @@ class TestPlotSpecFromFile:
         )
         spec = PlotSpec.from_file(cfg_path)
         assert spec.x.signal == "time"
+
+    def test_from_file_includes_path_in_validation_error(self, tmp_path):
+        cfg_path = tmp_path / "spec.yml"
+        cfg_path.write_text("x: {signal: time}\ny:\n  - label: V\n    signals: {}\n")
+
+        with pytest.raises(ValueError, match=str(cfg_path)):
+            PlotSpec.from_file(cfg_path)
