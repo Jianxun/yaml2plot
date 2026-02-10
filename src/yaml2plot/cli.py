@@ -150,10 +150,12 @@ def plot(
         # Apply CLI overrides via helper
         _apply_overrides(spec, width=width, height=height, title=title, theme=theme)
 
-        # Load SPICE data using helper
-        click.echo(f"Loading SPICE data from: {final_raw_file}")
-        dataset = load_spice_raw(final_raw_file)
-        data = normalize_plot_data(dataset)
+        # Load plotting data through the shared normalization adapter.
+        if final_raw_file.suffix.lower() == ".csv":
+            click.echo(f"Loading CSV data from: {final_raw_file}")
+        else:
+            click.echo(f"Loading SPICE data from: {final_raw_file}")
+        data = normalize_plot_data(final_raw_file)
 
         # Create the plot using v1.0.0 API
         click.echo("Creating plot...")

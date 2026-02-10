@@ -185,6 +185,20 @@ class TestLoadCsvData:
         with pytest.raises(ValueError, match="x_column"):
             wv_loader.load_csv_data(csv_file, x_column="missing")
 
+    def test_load_csv_data_rejects_empty_schema(self, tmp_path):
+        csv_file = tmp_path / "wave.csv"
+        csv_file.write_text("")
+
+        with pytest.raises(ValueError, match="missing a header row"):
+            wv_loader.load_csv_data(csv_file)
+
+    def test_load_csv_data_rejects_single_column_schema(self, tmp_path):
+        csv_file = tmp_path / "wave.csv"
+        csv_file.write_text("time\n0\n1e-9\n")
+
+        with pytest.raises(ValueError, match="expected at least 2 columns"):
+            wv_loader.load_csv_data(csv_file)
+
 
 class TestLoadCsvDataBatch:
     def test_batch_calls_underlying_loader(self, tmp_path):

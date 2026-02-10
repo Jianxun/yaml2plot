@@ -8,7 +8,6 @@ from unittest.mock import patch, MagicMock
 from click.testing import CliRunner
 
 import numpy as np
-import xarray as xr
 
 from yaml2plot.cli import cli
 from yaml2plot.core.plotspec import PlotSpec
@@ -31,12 +30,11 @@ class TestCliRawFieldHandling:
         config = spec.to_dict()
         assert config["raw"] == "test.raw"
 
-    @patch("yaml2plot.cli.load_spice_raw")
     @patch("yaml2plot.cli.normalize_plot_data")
     @patch("yaml2plot.cli.create_plot")
     @patch("yaml2plot.cli.configure_plotly_renderer")
     def test_yaml_raw_field_usage(
-        self, mock_configure, mock_plot, mock_normalize, mock_load, tmp_path
+        self, mock_configure, mock_plot, mock_normalize, tmp_path
     ):
         """Test using raw: field from YAML specification."""
         # Create a test spec file with raw: field
@@ -56,11 +54,6 @@ y:
 """
         spec_file.write_text(spec_content)
 
-        # Mock the load function to return fake xarray Dataset
-        data_vars = {"v1": (["time"], np.array([1, 2, 3]))}
-        coords = {"time": np.array([1, 2, 3])}
-        mock_dataset = xr.Dataset(data_vars=data_vars, coords=coords)
-        mock_load.return_value = mock_dataset
         mock_normalize.return_value = {
             "time": np.array([1, 2, 3]),
             "v1": np.array([1, 2, 3]),
@@ -72,14 +65,13 @@ y:
 
         assert result.exit_code == 0
         assert f"Loading SPICE data from: {raw_file}" in result.output
-        mock_load.assert_called_once_with(raw_file)
-        mock_normalize.assert_called_once_with(mock_dataset)
+        mock_normalize.assert_called_once_with(raw_file)
 
-    @patch("yaml2plot.cli.load_spice_raw")
+    @patch("yaml2plot.cli.normalize_plot_data")
     @patch("yaml2plot.cli.create_plot")
     @patch("yaml2plot.cli.configure_plotly_renderer")
     def test_positional_override_with_warning(
-        self, mock_configure, mock_plot, mock_load, tmp_path
+        self, mock_configure, mock_plot, mock_normalize, tmp_path
     ):
         """Test positional argument overrides YAML raw: field with warning."""
         spec_file = tmp_path / "spec.yaml"
@@ -100,11 +92,10 @@ y:
 """
         spec_file.write_text(spec_content)
 
-        # Mock the load function to return fake xarray Dataset
-        data_vars = {"v1": (["time"], np.array([1, 2, 3]))}
-        coords = {"time": np.array([1, 2, 3])}
-        mock_dataset = xr.Dataset(data_vars=data_vars, coords=coords)
-        mock_load.return_value = mock_dataset
+        mock_normalize.return_value = {
+            "time": np.array([1, 2, 3]),
+            "v1": np.array([1, 2, 3]),
+        }
         mock_plot.return_value = MagicMock()
 
         runner = CliRunner()
@@ -115,13 +106,13 @@ y:
         assert "CLI positional argument" in result.output
         assert "overrides YAML raw: field" in result.output
         assert f"Loading SPICE data from: {cli_raw_file}" in result.output
-        mock_load.assert_called_once_with(cli_raw_file)
+        mock_normalize.assert_called_once_with(cli_raw_file)
 
-    @patch("yaml2plot.cli.load_spice_raw")
+    @patch("yaml2plot.cli.normalize_plot_data")
     @patch("yaml2plot.cli.create_plot")
     @patch("yaml2plot.cli.configure_plotly_renderer")
     def test_raw_option_override_with_warning(
-        self, mock_configure, mock_plot, mock_load, tmp_path
+        self, mock_configure, mock_plot, mock_normalize, tmp_path
     ):
         """Test --raw option overrides both positional and YAML with warning."""
         spec_file = tmp_path / "spec.yaml"
@@ -144,11 +135,10 @@ y:
 """
         spec_file.write_text(spec_content)
 
-        # Mock the load function to return fake xarray Dataset
-        data_vars = {"v1": (["time"], np.array([1, 2, 3]))}
-        coords = {"time": np.array([1, 2, 3])}
-        mock_dataset = xr.Dataset(data_vars=data_vars, coords=coords)
-        mock_load.return_value = mock_dataset
+        mock_normalize.return_value = {
+            "time": np.array([1, 2, 3]),
+            "v1": np.array([1, 2, 3]),
+        }
         mock_plot.return_value = MagicMock()
 
         runner = CliRunner()
@@ -160,7 +150,43 @@ y:
         assert "Warning:" in result.output
         assert "CLI --raw option overrides" in result.output
         assert f"Loading SPICE data from: {opt_raw_file}" in result.output
-        mock_load.assert_called_once_with(opt_raw_file)
+        mock_normalize.assert_called_once_with(opt_raw_file)
+
+    @patch("yaml2plot.cli.normalize_plot_data")
+    @patch("yaml2plot.cli.create_plot")
+    @patch("yaml2plot.cli.configure_plotly_renderer")
+    def test_yaml_csv_field_usage(
+        self, mock_configure, mock_plot, mock_normalize, tmp_path
+    ):
+        """Test using raw: field with a CSV path."""
+        spec_file = tmp_path / "spec.yaml"
+        csv_file = tmp_path / "test.csv"
+        csv_file.write_text("time,v1\n0,1\n1,2\n")
+
+        spec_content = f"""
+title: "Test Plot"
+raw: "{csv_file}"
+x:
+  signal: "time"
+y:
+  - label: "Voltage"
+    signals:
+      V1: "v1"
+"""
+        spec_file.write_text(spec_content)
+
+        mock_normalize.return_value = {
+            "time": np.array([0, 1]),
+            "v1": np.array([1, 2]),
+        }
+        mock_plot.return_value = MagicMock()
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["plot", str(spec_file)])
+
+        assert result.exit_code == 0
+        assert f"Loading CSV data from: {csv_file}" in result.output
+        mock_normalize.assert_called_once_with(csv_file)
 
     def test_no_raw_file_specified_error(self, tmp_path):
         """Test error when no raw file is specified anywhere."""
