@@ -28,7 +28,7 @@ T-009:
   pr: 29
   merged: true
 T-010:
-  status: review_in_progress
+  status: request_changes
   pr: 30
   merged: false
 T-011:
