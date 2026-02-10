@@ -112,6 +112,13 @@ fig = y2p.plot(data, spec)
 fig.show()
 ```
 
+`load_spice_raw()` coordinate inference policy is deterministic:
+- Use `time` when present.
+- Else use `frequency` when present.
+- Else fall back to the first signal (dimension name: `axis`).
+- If both `time` and `frequency` exist, `time` is selected and a `UserWarning` is emitted.
+- If neither canonical coordinate exists, fallback is used and a `UserWarning` is emitted.
+
 **Advanced Example: Plotting Derived Signals**
 
 Because the API gives you direct access to the loaded data, you can easily perform calculations and plot the results.
