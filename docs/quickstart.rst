@@ -57,7 +57,7 @@ For more advanced use cases, the Python API provides full control over data load
 
 The API follows a clear three-step workflow:
 
-1.  **Data Loading** – Load the raw ``.raw`` file with :func:`yaml2plot.load_spice_raw`.
+1.  **Data Loading** – Load the raw ``.raw`` file with :func:`yaml2plot.load_spice_raw`, load tabular data with :func:`yaml2plot.load_csv_data`, or pass file paths directly to :func:`yaml2plot.plot`.
 2.  **Configuration** – Describe what you want to see using :class:`yaml2plot.PlotSpec`.
 3.  **Plotting** – Call :func:`yaml2plot.plot` to get a Plotly figure.
 
@@ -67,9 +67,9 @@ The API follows a clear three-step workflow:
 
    import yaml2plot as y2p
 
-   # 1. Load data from a .raw file
+   # 1. Load data from a .raw file (returns xarray.Dataset)
    data = y2p.load_spice_raw("your_simulation.raw")
-   print(f"Signals available: {list(data.keys())[:5]}...")
+   print(f"Signals available: {list(data.data_vars)[:5]}...")
 
    # 2. Configure the plot using a YAML string
    spec = y2p.PlotSpec.from_yaml("""
@@ -90,15 +90,17 @@ The API follows a clear three-step workflow:
 
 **Advanced Example: Plotting Derived Signals**
 
-Because the API gives you direct access to the data as NumPy arrays, you can easily perform calculations and plot the results.
+Because the API gives you direct access to loaded data, you can easily perform calculations and plot the results.
 
 .. code-block:: python
 
    import numpy as np
    import yaml2plot as y2p
 
-   # Load the data
-   data = y2p.load_spice_raw("your_simulation.raw")
+   # Load the data and build a dict view for derived signals
+   dataset = y2p.load_spice_raw("your_simulation.raw")
+   data = {name: dataset[name].values for name in dataset.data_vars}
+   data["time"] = dataset.coords["time"].values
 
    # Calculate a new, derived signal
    data["diff_voltage"] = data["v(out_p)"] - data["v(out_n)"]
@@ -120,6 +122,25 @@ Because the API gives you direct access to the data as NumPy arrays, you can eas
    # Create and display the plot
    fig = y2p.plot(data, spec)
    fig.show()
+
+**DataFrame and CSV Inputs**
+
+.. code-block:: python
+
+   import yaml2plot as y2p
+
+   # Option 1: load CSV into a DataFrame explicitly
+   df = y2p.load_csv_data("signals.csv")
+   fig = y2p.plot(df, spec)
+
+   # Option 2: let plot() route ".csv" path inputs automatically
+   fig = y2p.plot("signals.csv", spec)
+
+For DataFrame inputs, ``x.signal`` can reference:
+
+* a DataFrame column name
+* the DataFrame index name
+* ``index`` as a generic alias for the DataFrame index
 
 Next Steps
 ----------

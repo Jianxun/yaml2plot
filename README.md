@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
-yaml2plot is a powerful yet lightweight Python package for creating interactive Plotly figures from YAML specifications and SPICE .raw files with minimal code. It loads simulation data directly into a simple {signal_name: np.ndarray} dictionary, supports declarative multi-axis plots via YAML configurations, and automatically selects the best renderer for Jupyter, VS Code, or headless environments. With case-insensitive signal lookup and robust multi-strip support, yaml2plot lets you focus on circuit analysis—not plotting boilerplate.
+yaml2plot is a powerful yet lightweight Python package for creating interactive Plotly figures from YAML specifications and SPICE .raw files with minimal code. It supports dict, xarray Dataset, pandas DataFrame, and CSV-path plotting flows, declarative multi-axis plots via YAML configurations, and automatic renderer selection for Jupyter, VS Code, or headless environments. With case-insensitive signal lookup and robust multi-strip support, yaml2plot lets you focus on circuit analysis without plotting boilerplate.
 
 ![Demo](https://raw.githubusercontent.com/Jianxun/yaml2plot/main/examples/screenshots/yaml2plot_demo.png)
 
@@ -81,7 +81,7 @@ For more advanced use cases, the Python API provides full control over data load
 
 The API follows a clear three-step workflow:
 
-1. **Data Loading** – Load the raw ``.raw`` file with ``yaml2plot.load_spice_raw``.
+1. **Data Loading** – Load the raw ``.raw`` file with ``yaml2plot.load_spice_raw`` (xarray Dataset), load tabular data with ``yaml2plot.load_csv_data`` (DataFrame), or pass file paths directly to ``yaml2plot.plot``.
 2. **Configuration** – Describe what you want to see using ``yaml2plot.PlotSpec``.
 3. **Plotting** – Call ``yaml2plot.plot`` to get a Plotly figure.
 
@@ -90,9 +90,9 @@ The API follows a clear three-step workflow:
 ```python
 import yaml2plot as y2p
 
-# 1. Load data from a .raw file
+# 1. Load data from a .raw file (returns xarray.Dataset)
 data = y2p.load_spice_raw("your_simulation.raw")
-print(f"Signals available: {list(data.keys())[:5]}...")
+print(f"Signals available: {list(data.data_vars)[:5]}...")
 
 # 2. Configure the plot using a YAML string
 spec = y2p.PlotSpec.from_yaml("""
@@ -114,14 +114,16 @@ fig.show()
 
 **Advanced Example: Plotting Derived Signals**
 
-Because the API gives you direct access to the data as NumPy arrays, you can easily perform calculations and plot the results.
+Because the API gives you direct access to the loaded data, you can easily perform calculations and plot the results.
 
 ```python
 import numpy as np
 import yaml2plot as y2p
 
-# Load the data
-data = y2p.load_spice_raw("your_simulation.raw")
+# Load the data and build a dict view for derived signals
+dataset = y2p.load_spice_raw("your_simulation.raw")
+data = {name: dataset[name].values for name in dataset.data_vars}
+data["time"] = dataset.coords["time"].values
 
 # Calculate a new, derived signal
 data["diff_voltage"] = data["v(out_p)"] - data["v(out_n)"]
@@ -144,6 +146,24 @@ y:
 fig = y2p.plot(data, spec)
 fig.show()
 ```
+
+**DataFrame and CSV Inputs**
+
+```python
+import yaml2plot as y2p
+
+# Option 1: load CSV into a DataFrame explicitly
+df = y2p.load_csv_data("signals.csv")
+fig = y2p.plot(df, spec)
+
+# Option 2: let plot() route ".csv" path inputs automatically
+fig = y2p.plot("signals.csv", spec)
+```
+
+For DataFrame inputs, ``x.signal`` can reference:
+- a DataFrame column name
+- the DataFrame index name
+- ``"index"`` as a generic alias for the DataFrame index
 
 ## Development
 
