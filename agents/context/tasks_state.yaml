@@ -4,8 +4,8 @@ T-001:
   pr: 23
   merged: true
 T-004:
-  status: in_progress
-  pr: null
+  status: ready_for_review
+  pr: 24
   merged: false
 T-005:
   status: ready
